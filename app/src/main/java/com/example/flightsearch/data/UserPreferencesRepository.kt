@@ -30,7 +30,7 @@ import java.io.IOException
  * Concrete class implementation to access data store
  *
  * @param dataStore The [DataStore] instance
- * @property userTextInput The users text input [Flow]
+ * @property searchString The users text input [Flow]
  */
 class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
     private companion object {
@@ -40,7 +40,7 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
 
     /* Each time the data in the DataStore is updated,
     a new Preferences object is emitted into the Flow */
-    val userTextInput: Flow<String> = dataStore.data
+    val searchString: Flow<String> = dataStore.data
         .catch {
             if(it is IOException) {
                 Log.e(TAG, "Error reading preferences.", it)
@@ -59,7 +59,7 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
      * By setting up the key-value pair in the edit() method, the value is defined and initialized
      * until the app's cache or data is cleared.
      */
-    suspend fun saveUserTextInput(userTextInput: String) {
+    suspend fun storeSearchString(userTextInput: String) {
         dataStore.edit {preferences ->
             preferences[USER_TEXT_INPUT] = userTextInput
         }

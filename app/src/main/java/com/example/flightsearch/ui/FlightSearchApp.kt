@@ -36,26 +36,35 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.flightsearch.data.Airport
 
 /**
- * Displays the Flight Search app screen
+ * Displays the Flight Search app's screen
  */
 @Composable
 fun FlightSearchApp(
+    flightSearchViewModel: FlightSearchViewModel =
+        viewModel(factory = FlightSearchViewModel.Factory)) {
+    val uiState = flightSearchViewModel.uiState.collectAsState().value
+    if(uiState.searchString.isEmpty()) {
 
-) {
+    }
+    else {
 
+
+    }
 }
 
 /**
- * Displays the Flight Search app search bar
+ * Displays the Flight Search app's search bar
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
