@@ -22,6 +22,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.flightsearch.FlightSearchApplication
+import com.example.flightsearch.data.Airport
+import com.example.flightsearch.data.AirportDao
 import com.example.flightsearch.data.UserPreferencesRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -32,16 +34,21 @@ import kotlinx.coroutines.launch
 /**
  * View model for Flight Search app components
  *
- * @param userPreferencesRepository The [UserPreferencesRepository]
- *
+ * @param userPreferencesRepository The search string repository
+ * @param airportDao The flight search dao
  */
-class FlightSearchViewModel(private val userPreferencesRepository: UserPreferencesRepository): ViewModel() {
+class FlightSearchViewModel(
+    private val userPreferencesRepository: UserPreferencesRepository,
+    private val airportDao: AirportDao
+): ViewModel() {
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val application =
                     (this[APPLICATION_KEY] as FlightSearchApplication)
-                FlightSearchViewModel(application.userPreferencesRepository)
+                FlightSearchViewModel(
+                    application.userPreferencesRepository,
+                    application.database.airportDao())
             }
         }
     }
@@ -54,7 +61,8 @@ class FlightSearchViewModel(private val userPreferencesRepository: UserPreferenc
             userPreferencesRepository.storeSearchString(searchString)
         }
     }
-    val uiState: StateFlow<FlightSearchUiState> =
+
+    val flightSearchUiState: StateFlow<FlightSearchUiState> =
         userPreferencesRepository.searchString.map { searchString ->
              FlightSearchUiState(searchString)}
                  .stateIn(
@@ -62,6 +70,14 @@ class FlightSearchViewModel(private val userPreferencesRepository: UserPreferenc
                      started = SharingStarted.WhileSubscribed(5_000),
                      initialValue = FlightSearchUiState()
                  )
-        }
 
-    data class FlightSearchUiState(val searchString: String = "")
+    /**
+     * Retrieves all [Airport]s whose name or iata_code contains the users text input
+     */
+    fun getAirportsByText(searchString: String) = airportDao.getAirportsByText(searchString)
+
+
+    // TODO optional : getAirportByIataCode
+}
+
+data class FlightSearchUiState(var searchString: String = "")

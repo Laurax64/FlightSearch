@@ -18,31 +18,40 @@ package com.example.flightsearch.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.flightsearch.data.Airport
 
@@ -53,14 +62,8 @@ import com.example.flightsearch.data.Airport
 fun FlightSearchApp(
     flightSearchViewModel: FlightSearchViewModel =
         viewModel(factory = FlightSearchViewModel.Factory)) {
-    val uiState = flightSearchViewModel.uiState.collectAsState().value
-    if(uiState.searchString.isEmpty()) {
-
-    }
-    else {
-
-
-    }
+    val uiState = flightSearchViewModel.flightSearchUiState.collectAsState().value
+    FlightSearchBar(uiState, flightSearchViewModel)
 }
 
 /**
@@ -68,30 +71,56 @@ fun FlightSearchApp(
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun FsSearchBar(
-    query: String,
-    onQueryChange: (String) -> Unit,
-    onSearch: (String) -> Unit,
-    active: Boolean,
-    onActiveChange: (Boolean) -> Unit,
-    content: @Composable (ColumnScope.() -> Unit),
+private fun FlightSearchBar(
+    uiState: FlightSearchUiState,
+    flightSearchViewModel: FlightSearchViewModel,
     modifier: Modifier = Modifier
 ) {
-SearchBar(query, onQueryChange, onSearch, active, onActiveChange, modifier) {
-    content
-}
+    var active by remember { mutableStateOf(false) }
+    val airports by flightSearchViewModel.getAirportsByText(uiState.searchString).
+    collectAsState(initial = emptyList())
+
+    SearchBar(
+        query = uiState.searchString,
+        onQueryChange = {flightSearchViewModel.storeSearchString(it)},
+        onSearch = {active = false},
+        active = true,
+        onActiveChange = {active = it},
+        placeholder = {Text(text = "Enter departure airport")},
+        leadingIcon = {Icon(Icons.Default.Search,"Search Icon")},
+    ) {
+       LazyColumn(modifier.fillMaxWidth()){
+           items(items = airports, key = {airport -> airport.id}) {
+               AirportTextColumn(airport = it)
+           }
+       }
+    }
 }
 
 /**
- * Displays a card for the given [Airport]
+ * Displays a column for the given [Airport]
  */
 @Composable
-private fun AirportCard(airport: Airport){
-    Card(colors = CardDefaults.cardColors(contentColor = Color(0xff1d1b20))) {
-        Column {
-            Text(text = airport.iataCode, style = MaterialTheme.typography.bodyLarge)
-            Text(text = airport.name)
-        }
+private fun AirportTextColumn(airport: Airport, modifier: Modifier = Modifier){
+    Column(modifier.padding(16.dp)) {
+        Text(text = airport.iataCode,
+            style = TextStyle(
+                fontSize = 16.sp,
+                lineHeight = 24.sp,
+                fontWeight = FontWeight(400),
+                color = Color(0xFF1D1B20),
+                letterSpacing = 0.5.sp,
+            )
+        )
+        Text(text = airport.name,
+            style = TextStyle(
+                fontSize = 14.sp,
+                lineHeight = 20.sp,
+                fontWeight = FontWeight(400),
+                color = Color(0xFF49454F),
+                letterSpacing = 0.25.sp,
+            )
+        )
     }
 }
 
@@ -134,13 +163,12 @@ private fun RouteCard(destination: Airport, arrival: Airport, favorite: Boolean)
     }
 }
 
-
 /**
- * Displays the Flight Search Apps Top Bar
+ * Displays the Flight Search app's Top Bar
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun FsTopBar(modifier: Modifier = Modifier) {
+private fun FlightSearchTopBar(modifier: Modifier = Modifier) {
     CenterAlignedTopAppBar(
         title = {
             Text(

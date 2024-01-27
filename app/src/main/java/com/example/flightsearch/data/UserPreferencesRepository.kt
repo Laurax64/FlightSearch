@@ -34,7 +34,7 @@ import java.io.IOException
  */
 class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
     private companion object {
-        val USER_TEXT_INPUT = stringPreferencesKey("user text input")
+        val SEARCH_STRING = stringPreferencesKey("search string")
         const val TAG = "UserPreferencesRepo"
     }
 
@@ -50,7 +50,7 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
             }
         }
         .map { preferences ->
-        preferences[USER_TEXT_INPUT] ?: ""
+        preferences[SEARCH_STRING] ?: ""
         }
 
     /**
@@ -61,7 +61,7 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
      */
     suspend fun storeSearchString(userTextInput: String) {
         dataStore.edit {preferences ->
-            preferences[USER_TEXT_INPUT] = userTextInput
+            preferences[SEARCH_STRING] = userTextInput
         }
     }
 
