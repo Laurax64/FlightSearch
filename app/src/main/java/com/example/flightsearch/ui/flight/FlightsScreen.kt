@@ -22,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -29,33 +30,52 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.flightsearch.data.Airport
 import com.example.flightsearch.ui.AppViewModelProvider
+import com.example.flightsearch.ui.navigation.NavigationDestination
+import kotlinx.coroutines.launch
+
+object FlightsDestination : NavigationDestination {
+    override val route = "flights"
+    const val iataCodeArg = "iataCode"
+    val routeWithArgs = "$route/{$iataCodeArg}"
+}
 
 /**
  * Displays the flights for a given airport.
  */
 @Composable
-fun FlightScreen(flightsViewModel: FlightsViewModel = viewModel(
-    factory = AppViewModelProvider.Factory)){
+fun FlightsScreen(
+    flightsViewModel: FlightsViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    navigateBack: () -> Unit
+){
     val flightsUiState by flightsViewModel.flightsUiState.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
 
-    Scaffold(topBar = { FlightsTopBar(iataCode = flightsUiState.airport.iataCode) }) {
-        ShowFlights(
-            Modifier.padding(it), flightsUiState.airport, flightsUiState.destinationAirports )
+    Scaffold(topBar = {
+        FlightsTopBar(iataCode = flightsUiState.airport.iataCode,
+            onBackClick = navigateBack) }) {
+        ShowFlights(Modifier.padding(it), flightsUiState.airport,
+            flightsUiState.destinationAirports,
+             onStarClick = {      
+                 coroutineScope.launch {
+                     flightsViewModel.changeFavorite()
+                 }
+             })
     }
 }
+
 
 /**
  * Displays the flight screen's top bar
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FlightsTopBar(modifier: Modifier = Modifier, iataCode: String) {
+fun FlightsTopBar(modifier: Modifier = Modifier, iataCode: String, onBackClick: () -> Unit) {
     CenterAlignedTopAppBar(
         title = { Text(
             text = "Flights from $iataCode",
             style = MaterialTheme.typography.titleLarge) },
         navigationIcon = {
-            IconButton(onClick = { /* TODO */ }){
+            IconButton(onClick = onBackClick ){
                 Icon(Icons.Default.ArrowBack, "Arrow back")
             }
         }
@@ -69,11 +89,12 @@ fun FlightsTopBar(modifier: Modifier = Modifier, iataCode: String) {
 fun ShowFlights(
     modifier: Modifier = Modifier,
     departure: Airport,
-    destinations: List<Airport>
+    destinations: List<Airport>,
+    onStarClick: () -> Unit
 ) {
     LazyColumn(modifier.fillMaxWidth()) {
         items(destinations) {
-            FlightCard(departure, it, favorite = true)
+            FlightCard(departure, it, onStarClick)
         }
     }
 }
@@ -84,7 +105,7 @@ fun ShowFlights(
  */
 @Composable
 fun FlightCard(
-    departure: Airport, arrival: Airport, favorite: Boolean
+    departure: Airport, arrival: Airport, onStarClick: () -> Unit
 ) {
     Card(colors = CardDefaults.cardColors(contentColor = Color(0xff1d1b20))) {
         Row(
@@ -111,7 +132,7 @@ fun FlightCard(
                 Text(text = arrival.iataCode)
                 Text(text = arrival.name)
             }
-            IconButton(onClick = {/* TODO */}) {
+            IconButton(onClick = onStarClick) {
                 Icons.Outlined.Star
             }
         }

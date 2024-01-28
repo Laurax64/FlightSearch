@@ -22,7 +22,7 @@ object AppViewModelProvider {
                             as FlightSearchApplication)
                 AirportSearchViewModel(
                     application.userPreferencesRepository,
-                    application.airportRepository
+                    flightSearchApplication().container.airportRepository
                 )
             }
 
@@ -31,7 +31,7 @@ object AppViewModelProvider {
                 (this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as FlightSearchApplication)
             FavoriteFlightsViewModel(
                 application.userPreferencesRepository,
-                application.favoriteRepository
+                flightSearchApplication().container.favoriteRepository
             )
         }
 
@@ -40,8 +40,9 @@ object AppViewModelProvider {
                 (this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY]
                         as FlightSearchApplication)
             FlightsViewModel(
-                application.airportRepository,
+                flightSearchApplication().container.airportRepository,
                 application.userPreferencesRepository,
+                flightSearchApplication().container.favoriteRepository
             )
         }
     }
@@ -50,5 +51,5 @@ object AppViewModelProvider {
 /**
  * Queries for an [Application] object and returns an instance of [FlightSearchApplication].
  */
-fun CreationExtras.inventoryApplication(): FlightSearchApplication =
+fun CreationExtras.flightSearchApplication(): FlightSearchApplication =
     (this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as FlightSearchApplication)

@@ -42,6 +42,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.flightsearch.data.Favorite
 import com.example.flightsearch.ui.AppViewModelProvider
+import com.example.flightsearch.ui.navigation.NavigationDestination
+
+object FavoriteFlightsDestination : NavigationDestination {
+    override val route = "favorite_flights"
+}
 
 /**
  * Displays an app top bar and the user's favorite flights
@@ -50,11 +55,13 @@ import com.example.flightsearch.ui.AppViewModelProvider
 fun FavoriteFlightsScreen(
     favoriteFlightsViewModel: FavoriteFlightsViewModel = viewModel(
         factory = AppViewModelProvider.Factory
-    )) {
+    ),
+    navigateToAirportSearch: () -> Unit
+) {
     val favoriteFlightUiState by favoriteFlightsViewModel
         .favoriteFlightsUiState.collectAsState()
 
-    Scaffold(topBar = { FlightSearchTopBar() }) {
+    Scaffold(topBar = { FlightSearchTopBar(onSearchClick = navigateToAirportSearch) }) {
         FavoriteFlights(Modifier.padding(it), favoriteFlightUiState.favoriteList,
             favoriteFlightsViewModel)
     }
@@ -65,11 +72,12 @@ fun FavoriteFlightsScreen(
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FlightSearchTopBar(modifier: Modifier = Modifier) {
+fun FlightSearchTopBar(
+    modifier: Modifier = Modifier, onSearchClick: () -> Unit) {
     CenterAlignedTopAppBar(
         title = { Text(text = "Flight search", style = MaterialTheme.typography.titleLarge) },
         navigationIcon = {
-            IconButton(onClick = { /* TODO */ }){
+            IconButton(onClick = onSearchClick){
                 Icon(Icons.Default.Search, "Search Icon")
             }
         }

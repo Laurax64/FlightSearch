@@ -20,9 +20,8 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
-import com.example.flightsearch.data.AirportRepository
-import com.example.flightsearch.data.AppDatabase
-import com.example.flightsearch.data.FavoriteRepository
+import com.example.flightsearch.data.AppContainer
+import com.example.flightsearch.data.AppDataContainer
 import com.example.flightsearch.data.UserPreferencesRepository
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
@@ -33,16 +32,17 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
  * Custom app entry point for manual dependency injection
  *
  * @property userPreferencesRepository The search string repository
- * @property airportRepository The airport repository
- * @property favoriteRepository The favorite repository
  */
 class FlightSearchApplication: Application() {
+    /**
+     * AppContainer instance used by the rest of classes to obtain dependencies
+     */
+    lateinit var container: AppContainer
     lateinit var userPreferencesRepository: UserPreferencesRepository
-    lateinit var airportRepository: AirportRepository
-    lateinit var favoriteRepository: FavoriteRepository
-    val database: AppDatabase by lazy { AppDatabase.getDatabase(this) }
+
     override fun onCreate() {
         super.onCreate()
+        container = AppDataContainer(this)
         userPreferencesRepository = UserPreferencesRepository(dataStore)
     }
 }

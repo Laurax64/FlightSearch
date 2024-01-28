@@ -25,11 +25,18 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.flightsearch.data.Airport
 import com.example.flightsearch.ui.AppViewModelProvider
+import com.example.flightsearch.ui.navigation.NavigationDestination
 
+object AirportSearchDestination : NavigationDestination {
+    override val route = "airport_search"
+}
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AirportSearchScreen(
-    airportSearchViewModel: AirportSearchViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    airportSearchViewModel: AirportSearchViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    navigateBack: () -> Boolean,
+    onNavigateUp: () -> Boolean,
+    navigateToFlights: (String) -> Unit
 ) {
     val airportSearchUiState by airportSearchViewModel
         .airportSearchUiState.collectAsState()
@@ -44,16 +51,19 @@ fun AirportSearchScreen(
         placeholder = { Text(text = "Enter departure airport") },
         leadingIcon = { Icon(Icons.Default.Search, "Search Icon") }
     ) {
-        AirportSearchResults(airports = airportSearchUiState.airports)
+        AirportSearchResults(
+            airports = airportSearchUiState.airports,
+            onAirportClick = navigateToFlights)
     }
 }
 
 @Composable
 fun AirportSearchResults(
-    modifier: Modifier = Modifier, airports: List<Airport>) {
+    modifier: Modifier = Modifier, airports: List<Airport>, onAirportClick: (String) -> Unit
+) {
     LazyColumn(modifier.fillMaxWidth()) {
         items(items = airports, key = { airport -> airport.id }) {
-            AirportTextColumn(modifier, it, { /* TODO */ })
+            AirportTextColumn(modifier, it, onAirportClick )
         }
     }
 }
@@ -63,8 +73,8 @@ fun AirportSearchResults(
  */
 @Composable
 fun AirportTextColumn(modifier: Modifier = Modifier, airport: Airport,
-                      onAirportClick: (airport: Airport) -> Unit) {
-    Card(modifier.clickable { onAirportClick(airport) }) {
+                      onAirportClick: (String) -> Unit) {
+    Card(modifier.clickable { onAirportClick(airport.iataCode) }) {
         Column(modifier.padding(16.dp)) {
             Text(text = airport.iataCode, fontWeight = FontWeight.Bold)
             Text(text = airport.name)

@@ -15,7 +15,12 @@ interface FavoriteRepository {
     suspend fun delete(favorite: Favorite)
 
     /**
-     * Retrieves als routes from the favorite table of the flight_search database
+     * Retrieves als flights from the favorite table of the flight_search database
      */
-    fun getFavorites(): List<Favorite>
+    fun getFavorites(): MutableList<Favorite>
+
+    /**
+     * Retrieves a favorite from the favorite table of the flight_search database by iata_code
+     */
+    fun getFavorite(departureCode: String, destinationCode: String): Favorite
 }

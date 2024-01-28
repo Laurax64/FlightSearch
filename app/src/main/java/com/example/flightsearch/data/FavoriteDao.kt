@@ -39,8 +39,17 @@ interface FavoriteDao {
     suspend fun delete(favorite: Favorite)
 
     /**
-     * Retrieves als routes from the favorite table of the flight_search database
+     * Retrieves all favorites from the favorite table of the flight_search database
      */
-    @Query("SELECT * from favorite")
-    fun getFavorites(): List<Favorite>
+    @Query("SELECT * FROM favorite")
+    fun getFavorites(): MutableList<Favorite>
+
+    /**
+     * Retrieves a favorite from the favorite table of the flight_search database by iata_code
+     */
+    @Query("""
+        SELECT * FROM favorite
+        WHERE departure_code = :departureCode AND destination_code = :destinationCode
+        """)
+    fun getFavorite(departureCode: String, destinationCode: String): Favorite
 }
