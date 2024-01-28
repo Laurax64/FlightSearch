@@ -19,7 +19,6 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
-import kotlinx.coroutines.flow.Flow
 
 /**
  * Interface which is implemented by room at compile time that provides methods for
@@ -43,5 +42,5 @@ interface FavoriteDao {
      * Retrieves als routes from the favorite table of the flight_search database
      */
     @Query("SELECT * from favorite")
-    fun getAll(): Flow<List<Favorite>>
+    fun getFavorites(): List<Favorite>
 }

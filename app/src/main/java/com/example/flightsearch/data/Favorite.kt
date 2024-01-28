@@ -28,6 +28,6 @@ data class Favorite(
     val id: Int,
     @ColumnInfo(name = "departure_code")
     val departureCode: String,
-    @ColumnInfo(name = " destination_code")
+    @ColumnInfo(name = "destination_code")
     val destinationCode: String
 )
