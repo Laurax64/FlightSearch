@@ -1,5 +1,7 @@
 package com.example.flightsearch.data
 
+import kotlinx.coroutines.flow.Flow
+
 /**
  * Interface for a repository for the [FavoriteDao] methods
  */
@@ -17,10 +19,10 @@ interface FavoriteRepository {
     /**
      * Retrieves als flights from the favorite table of the flight_search database
      */
-    fun getFavorites(): MutableList<Favorite>
+    fun getFavorites(): Flow<List<Favorite>>
 
     /**
      * Retrieves a favorite from the favorite table of the flight_search database by iata_code
      */
-    fun getFavorite(departureCode: String, destinationCode: String): Favorite
+    fun getFavorite(departureCode: String, destinationCode: String): Flow<Favorite>
 }

@@ -14,7 +14,7 @@ class OfflineFavoriteRepository(private val favoriteDao: FavoriteDao): FavoriteR
     /**
      * Retrieves als routes from the favorite table of the flight_search database
      */
-    override fun getFavorites(): MutableList<Favorite> = favoriteDao.getFavorites()
+    override fun getFavorites() = favoriteDao.getFavorites()
 
     /**
      * Retrieves a favorite from the favorite table of the flight_search database by iata_code

@@ -17,6 +17,7 @@ package com.example.flightsearch.data
 
 import androidx.room.Dao
 import androidx.room.Query
+import kotlinx.coroutines.flow.Flow
 
 /**
  * Interface which is implemented by room at compile time that provides methods for
@@ -34,7 +35,7 @@ interface AirportDao {
         ORDER BY passengers DESC  
         """
     )
-    fun getAirportsByText(searchString: String): List<Airport>
+    fun getAirportsByText(searchString: String): Flow<List<Airport>>
 
     /**
      *
@@ -47,7 +48,7 @@ interface AirportDao {
         WHERE iata_code = :iataCode
         """
     )
-    fun getAirportByIataCode(iataCode: String): Airport
+    fun getAirportByIataCode(iataCode: String): Flow<Airport>
 
     /**
      *
@@ -60,5 +61,5 @@ interface AirportDao {
         WHERE iata_code != :iataCode
         """
     )
-    fun getAllDestinationsFor(iataCode: String): List<Airport>
+    fun getAllDestinationsFor(iataCode: String): Flow<List<Airport>>
 }

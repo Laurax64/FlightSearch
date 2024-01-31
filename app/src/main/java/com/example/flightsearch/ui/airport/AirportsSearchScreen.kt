@@ -29,22 +29,29 @@ import com.example.flightsearch.ui.navigation.NavigationDestination
 
 object AirportSearchDestination : NavigationDestination {
     override val route = "airport_search"
+    const val searchStringArg = "search_string"
+    val routeWithArgs = "$route/{$searchStringArg}"
 }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AirportSearchScreen(
-    airportSearchViewModel: AirportSearchViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    airportSearchViewModel: AirportSearchViewModel =
+        viewModel(factory = AppViewModelProvider.Factory),
     navigateBack: () -> Boolean,
     onNavigateUp: () -> Boolean,
     navigateToFlights: (String) -> Unit
+
 ) {
-    val airportSearchUiState by airportSearchViewModel
-        .airportSearchUiState.collectAsState()
+
+    val searchString = airportSearchViewModel.userPreferencesRepository.searchString
+        .collectAsState(initial = "").value
+    val airports =  airportSearchViewModel.airportSearchUiState
+        .collectAsState().value.airports
     var active by remember { mutableStateOf(false) }
 
     SearchBar(
-        query = airportSearchUiState.searchString,
-        onQueryChange = { airportSearchViewModel.storeSearchString(it) },
+        query = searchString,
+        onQueryChange = { airportSearchViewModel.saveSearchString(searchString) },
         onSearch = { active = false },
         active = true,
         onActiveChange = { active = it },
@@ -52,7 +59,7 @@ fun AirportSearchScreen(
         leadingIcon = { Icon(Icons.Default.Search, "Search Icon") }
     ) {
         AirportSearchResults(
-            airports = airportSearchUiState.airports,
+            airports = airports,
             onAirportClick = navigateToFlights)
     }
 }

@@ -63,6 +63,7 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
 }
 
 dependencies {
@@ -88,4 +89,5 @@ dependencies {
     implementation("androidx.room:room-runtime:${rootProject.extra["room_version"]}")
     ksp("androidx.room:room-compiler:${rootProject.extra["room_version"]}")
     implementation("androidx.datastore:datastore-preferences:1.0.0")
+    implementation ("androidx.navigation:navigation-compose:2.7.6")
 }

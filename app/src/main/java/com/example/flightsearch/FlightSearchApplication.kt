@@ -23,9 +23,9 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.example.flightsearch.data.AppContainer
 import com.example.flightsearch.data.AppDataContainer
 import com.example.flightsearch.data.UserPreferencesRepository
-
+private const val SEARCH_STRING = "search_string_preferences"
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
-    name = "search_string_preferences"
+    name =  SEARCH_STRING
 )
 
 /**
@@ -34,9 +34,7 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
  * @property userPreferencesRepository The search string repository
  */
 class FlightSearchApplication: Application() {
-    /**
-     * AppContainer instance used by the rest of classes to obtain dependencies
-     */
+
     lateinit var container: AppContainer
     lateinit var userPreferencesRepository: UserPreferencesRepository
 

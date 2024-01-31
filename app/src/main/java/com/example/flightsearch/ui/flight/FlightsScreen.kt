@@ -35,8 +35,8 @@ import kotlinx.coroutines.launch
 
 object FlightsDestination : NavigationDestination {
     override val route = "flights"
-    const val iataCodeArg = "iataCode"
-    val routeWithArgs = "$route/{$iataCodeArg}"
+    const val departureAirport = "departure"
+    val routeWithArgs = "$route/{$departureAirport}"
 }
 
 /**
@@ -55,14 +55,13 @@ fun FlightsScreen(
             onBackClick = navigateBack) }) {
         ShowFlights(Modifier.padding(it), flightsUiState.airport,
             flightsUiState.destinationAirports,
-             onStarClick = {      
+             onStarClick = {
                  coroutineScope.launch {
-                     flightsViewModel.changeFavorite()
+
                  }
              })
     }
 }
-
 
 /**
  * Displays the flight screen's top bar

@@ -19,16 +19,17 @@ import kotlinx.coroutines.launch
  *
  */
 class FavoriteFlightsViewModel(
-    userPreferencesRepository: UserPreferencesRepository,
+    private val userPreferencesRepository: UserPreferencesRepository,
     private val favoriteRepository: FavoriteRepository): ViewModel() {
 
+
     val favoriteFlightsUiState: StateFlow<FavoriteFlightsUiState> =
-        userPreferencesRepository.searchString.map { searchString ->
-                FavoriteFlightsUiState(searchString, favoriteRepository.getFavorites())
+        favoriteRepository.getFavorites().map {
+                FavoriteFlightsUiState(it)
         }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(),
-            initialValue = FavoriteFlightsUiState("", listOf())
+            initialValue = FavoriteFlightsUiState(listOf())
         )
 
     /**
@@ -37,16 +38,27 @@ class FavoriteFlightsViewModel(
     fun delete(favorite: Favorite) {
         viewModelScope.launch { favoriteRepository.delete(favorite) }
     }
+
+    /**
+     * * Writes the users text input to the DataStore
+     */
+    fun saveSearchString(searchString: String) {
+        viewModelScope.launch {
+            userPreferencesRepository.saveSearchString(searchString)
+        }
+    }
 }
 
 /**
  * Ui state for the user's favorite flights
- *
- * @property searchString The user's search text
- * @property favoriteList The user's [Favorite]s
  */
 data class FavoriteFlightsUiState(
-    var searchString: String,
     var favoriteList: List<Favorite>
 )
 
+/**
+ * Ui state for the user's search string
+ */
+data class SearchStringUiState(
+    var searchString: String = ""
+)

@@ -8,7 +8,8 @@ class OfflineAirportRepository(private val airportDao: AirportDao): AirportRepos
     /**
      * Retrieves all [Airport]s whose name or iata_code contains the users text input
      */
-    override fun getAirportsByText(searchString: String) = airportDao.getAirportsByText(searchString)
+    override fun getAirportsByText(searchString: String) =
+        airportDao.getAirportsByText(searchString)
 
     /**
      * Retrieves the [Airport] from the airport table of the flight_search database whose iata_code

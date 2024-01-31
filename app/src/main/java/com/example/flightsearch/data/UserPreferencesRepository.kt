@@ -34,7 +34,7 @@ import java.io.IOException
  */
 class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
     private companion object {
-        val SEARCH_STRING = stringPreferencesKey("search string")
+        val SEARCH_STRING = stringPreferencesKey("search_string")
         const val TAG = "UserPreferencesRepo"
     }
 
@@ -59,12 +59,9 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
      * By setting up the key-value pair in the edit() method, the value is defined and initialized
      * until the app's cache or data is cleared.
      */
-    suspend fun storeSearchString(userTextInput: String) {
+    suspend fun saveSearchString(userTextInput: String) {
         dataStore.edit {preferences ->
             preferences[SEARCH_STRING] = userTextInput
         }
     }
-
-
-
 }

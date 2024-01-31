@@ -8,6 +8,9 @@ import com.example.flightsearch.ui.navigation.FlightSearchNavHost
 
 /**
  * Top level composable that represents screens for the application.
+ *
+ * @param navController The app's navigation controller
+ *
  */
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable

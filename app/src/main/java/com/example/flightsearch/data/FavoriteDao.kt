@@ -19,6 +19,7 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
+import kotlinx.coroutines.flow.Flow
 
 /**
  * Interface which is implemented by room at compile time that provides methods for
@@ -42,7 +43,7 @@ interface FavoriteDao {
      * Retrieves all favorites from the favorite table of the flight_search database
      */
     @Query("SELECT * FROM favorite")
-    fun getFavorites(): MutableList<Favorite>
+    fun getFavorites(): Flow<List<Favorite>>
 
     /**
      * Retrieves a favorite from the favorite table of the flight_search database by iata_code
@@ -51,5 +52,5 @@ interface FavoriteDao {
         SELECT * FROM favorite
         WHERE departure_code = :departureCode AND destination_code = :destinationCode
         """)
-    fun getFavorite(departureCode: String, destinationCode: String): Favorite
+    fun getFavorite(departureCode: String, destinationCode: String): Flow<Favorite>
 }
