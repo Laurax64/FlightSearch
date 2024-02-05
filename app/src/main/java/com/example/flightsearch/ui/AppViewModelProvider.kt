@@ -18,7 +18,6 @@ object AppViewModelProvider {
     val Factory = viewModelFactory {
         initializer {
                 AirportSearchViewModel(
-                    this.createSavedStateHandle(),
                     flightSearchApplication().container.airportRepository,
                     flightSearchApplication().userPreferencesRepository,
                 )

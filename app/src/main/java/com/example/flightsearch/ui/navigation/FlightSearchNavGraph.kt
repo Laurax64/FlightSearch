@@ -44,29 +44,24 @@ fun FlightSearchNavHost(
     ) {
         composable(route = FavoriteFlightsDestination.route) {
             FavoriteFlightsScreen(
-                navigateToAirportSearch = {
-                    navController.navigate(AirportSearchDestination.routeWithArgs)
-                },
+                navigateToAirportSearch = { navController.navigate(
+                    AirportSearchDestination.route) },
+            )
+        }
+        composable(route = AirportSearchDestination.route) {
+            AirportSearchScreen(
+                navigateToFlights = {
+                    navController.navigate("${FlightsDestination.route}/${it}")
+                }
             )
         }
         composable(
-            route = AirportSearchDestination.routeWithArgs,
+            route = FlightsDestination.routeWithArgs,
             arguments = listOf(
-                navArgument(AirportSearchDestination.searchStringArg) {
-                    type = NavType.StringType
-                }
-
-            )
-        ) {
-            AirportSearchScreen(
-                navigateBack = { navController.popBackStack() },
-                onNavigateUp = { navController.navigateUp() },
-                navigateToFlights = {
-                    navController.navigate(FlightsDestination.route)
-                }
-            )
-        }
-        composable(route = FlightsDestination.route) {
+                navArgument(FlightsDestination.departureAirport) {
+                type = NavType.StringType
+                })
+            ) {
             FlightsScreen(
                 navigateBack = { navController.navigateUp() }
             )

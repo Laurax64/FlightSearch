@@ -29,38 +29,37 @@ import com.example.flightsearch.ui.navigation.NavigationDestination
 
 object AirportSearchDestination : NavigationDestination {
     override val route = "airport_search"
-    const val searchStringArg = "search_string"
-    val routeWithArgs = "$route/{$searchStringArg}"
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AirportSearchScreen(
     airportSearchViewModel: AirportSearchViewModel =
         viewModel(factory = AppViewModelProvider.Factory),
-    navigateBack: () -> Boolean,
-    onNavigateUp: () -> Boolean,
     navigateToFlights: (String) -> Unit
 
 ) {
-
-    val searchString = airportSearchViewModel.userPreferencesRepository.searchString
-        .collectAsState(initial = "").value
-    val airports =  airportSearchViewModel.airportSearchUiState
-        .collectAsState().value.airports
+    val searchBarUiState = airportSearchViewModel.searchBarUiState.collectAsState().value
+    val airportSearchUiState = airportSearchViewModel.
+    aiportSearchUiState.collectAsState().value
     var active by remember { mutableStateOf(false) }
 
     SearchBar(
-        query = searchString,
-        onQueryChange = { airportSearchViewModel.saveSearchString(searchString) },
+        query = searchBarUiState.searchString,
+        onQueryChange = {
+            airportSearchViewModel.storeSearchString(it)
+        },
         onSearch = { active = false },
-        active = true,
+        active = active,
         onActiveChange = { active = it },
         placeholder = { Text(text = "Enter departure airport") },
         leadingIcon = { Icon(Icons.Default.Search, "Search Icon") }
     ) {
         AirportSearchResults(
-            airports = airports,
-            onAirportClick = navigateToFlights)
+        airports = airportSearchUiState.airports,
+        onAirportClick =
+        { iataCode -> navigateToFlights(iataCode) }
+        )
     }
 }
 
@@ -70,7 +69,7 @@ fun AirportSearchResults(
 ) {
     LazyColumn(modifier.fillMaxWidth()) {
         items(items = airports, key = { airport -> airport.id }) {
-            AirportTextColumn(modifier, it, onAirportClick )
+            AirportCard(modifier, it, onAirportClick )
         }
     }
 }
@@ -79,9 +78,9 @@ fun AirportSearchResults(
  * Displays a clickable column for the given [Airport]
  */
 @Composable
-fun AirportTextColumn(modifier: Modifier = Modifier, airport: Airport,
-                      onAirportClick: (String) -> Unit) {
-    Card(modifier.clickable { onAirportClick(airport.iataCode) }) {
+fun AirportCard(modifier: Modifier = Modifier, airport: Airport,
+                onAirportClick: (String) -> Unit) {
+    Card(modifier.fillMaxWidth().clickable { onAirportClick(airport.iataCode) }) {
         Column(modifier.padding(16.dp)) {
             Text(text = airport.iataCode, fontWeight = FontWeight.Bold)
             Text(text = airport.name)

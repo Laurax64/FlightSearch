@@ -1,5 +1,6 @@
 package com.example.flightsearch.ui.flight
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -42,24 +43,27 @@ object FlightsDestination : NavigationDestination {
 /**
  * Displays the flights for a given airport.
  */
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun FlightsScreen(
     flightsViewModel: FlightsViewModel = viewModel(factory = AppViewModelProvider.Factory),
-    navigateBack: () -> Unit
+    navigateBack: () -> Unit,
 ){
     val flightsUiState by flightsViewModel.flightsUiState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
 
     Scaffold(topBar = {
-        FlightsTopBar(iataCode = flightsUiState.airport.iataCode,
+        FlightsTopBar(iataCode = flightsUiState.departureIataCode,
             onBackClick = navigateBack) }) {
-        ShowFlights(Modifier.padding(it), flightsUiState.airport,
-            flightsUiState.destinationAirports,
+        ShowFlights(
+            departure = Airport(-1, flightsUiState.departureIataCode, "name",-1),
+            destinations = flightsUiState.destinationAirports,
              onStarClick = {
                  coroutineScope.launch {
 
                  }
-             })
+             }
+        )
     }
 }
 
@@ -93,7 +97,7 @@ fun ShowFlights(
 ) {
     LazyColumn(modifier.fillMaxWidth()) {
         items(destinations) {
-            FlightCard(departure, it, onStarClick)
+            FlightCard(modifier, departure, it, onStarClick)
         }
     }
 }
@@ -103,10 +107,13 @@ fun ShowFlights(
  * that lets the user add or remove the route from the favorite routes
  */
 @Composable
-fun FlightCard(
-    departure: Airport, arrival: Airport, onStarClick: () -> Unit
+fun FlightCard( modifier: Modifier = Modifier, departure: Airport,
+                arrival: Airport, onStarClick: () -> Unit
 ) {
-    Card(colors = CardDefaults.cardColors(contentColor = Color(0xff1d1b20))) {
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(contentColor = Color(0xff1d1b20))
+    ) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.Start),
             modifier = Modifier
