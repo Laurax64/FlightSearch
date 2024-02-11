@@ -23,6 +23,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.example.flightsearch.data.AppContainer
 import com.example.flightsearch.data.AppDataContainer
 import com.example.flightsearch.data.UserPreferencesRepository
+
 private const val SEARCH_STRING = "search_string_preferences"
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
     name =  SEARCH_STRING

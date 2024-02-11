@@ -5,11 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.flightsearch.data.Airport
 import com.example.flightsearch.data.AirportRepository
 import com.example.flightsearch.data.UserPreferencesRepository
-import com.example.flightsearch.ui.SearchBarUiState
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
 /**
@@ -19,50 +15,29 @@ import kotlinx.coroutines.launch
  */
 class AirportSearchViewModel(
     private val airportRepository: AirportRepository,
-    val userPreferencesRepository: UserPreferencesRepository): ViewModel() {
-
-    val searchBarUiState: StateFlow<SearchBarUiState> =
-        userPreferencesRepository.searchString.map { searchString ->
-            SearchBarUiState(searchString)}
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5_000),
-                initialValue = SearchBarUiState()
-            )
-
-    val aiportSearchUiState: StateFlow<AirportSearchUiState> =
-        airportRepository.getAirportsByText(searchBarUiState.value.searchString).map {
-            AirportSearchUiState(it)
-        }.stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
-            initialValue = AirportSearchUiState()
-        )
-
-    companion object {
-        private const val TIMEOUT_MILLIS = 5000L
-    }
+    private val userPreferencesRepository: UserPreferencesRepository): ViewModel() {
 
     /**
-    * Stores the search string
+    * Stores the search string in the [UserPreferencesRepository]
     */
-    fun storeSearchString(searchString: String = "") {
+    fun saveSearchString(searchString: String) {
         viewModelScope.launch {
             userPreferencesRepository.saveSearchString(searchString)
         }
     }
 
     /**
-     * Retrieves all [Airport]s whose name or iata_code contains the users text input
+    * Returns the search string [Flow]
+    */
+    fun getSearchString(): Flow<String> {
+        return userPreferencesRepository.searchString
+    }
+
+    /**
+     * Returns the list of [Airport]'s that contain the search String
      */
-    fun getAirportsByText(searchString: String) = airportRepository.getAirportsByText(searchString)
 
-
+    fun getAirportsByText(searchString: String): Flow<List<Airport>> {
+        return airportRepository.getAirportsByText(searchString)
+    }
 }
-
-/**
- * UI state for the airport search
- *
- * @property airports The current search result
- */
-data class AirportSearchUiState(var airports: List<Airport> = listOf())

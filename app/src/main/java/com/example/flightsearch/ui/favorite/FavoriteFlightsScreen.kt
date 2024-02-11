@@ -23,8 +23,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -35,8 +35,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -44,6 +42,9 @@ import com.example.flightsearch.data.Favorite
 import com.example.flightsearch.ui.AppViewModelProvider
 import com.example.flightsearch.ui.navigation.NavigationDestination
 
+/**
+ * Represents a navigation destination for the favorite flights screen
+ */
 object FavoriteFlightsDestination : NavigationDestination {
     override val route = "favorite_flights"
 }
@@ -58,14 +59,23 @@ fun FavoriteFlightsScreen(
     ),
     navigateToAirportSearch: () -> Unit
 ) {
-    val favoriteFlightUiState by favoriteFlightsViewModel
-        .favoriteFlightsUiState.collectAsState()
+    val favorites = favoriteFlightsViewModel.getFavorites()
+        .collectAsState(initial = listOf()).value
 
-    Scaffold(topBar = { FlightSearchTopBar(onSearchClick = navigateToAirportSearch) }) {
-        FavoriteFlights(Modifier.padding(it), favoriteFlightUiState.favoriteList,
-            favoriteFlightsViewModel)
+    Scaffold(topBar = { FlightSearchTopBar(
+        onSearchClick = navigateToAirportSearch) }) {
+        ShowFavorites(
+            Modifier.padding(it),
+            favorites
+        ) { depCode: String, desCode: String ->
+                favorites.forEach {
+                    if (it.departureCode == depCode && it.destinationCode == desCode) {
+                        favoriteFlightsViewModel.delete(it)
+                    }
+                }
+            }
+        }
     }
-}
 
 /**
  * Displays the favorite screen's top bar
@@ -88,15 +98,14 @@ fun FlightSearchTopBar(
  * Displays a [LazyColumn] of [Favorite] flights
  */
 @Composable
-fun FavoriteFlights(
+fun ShowFavorites(
     modifier: Modifier = Modifier, favorites: List<Favorite>,
-    favoriteFlightsViewModel: FavoriteFlightsViewModel
+    onHeartClick: (String, String) -> Unit
 ) {
     LazyColumn(modifier.fillMaxWidth()) {
-        items(items = favorites, key = { favorite -> favorite.id }) {
-            FavoriteCard(modifier, it.departureCode, it.destinationCode) {
-                favoriteFlightsViewModel.delete(it)
-            }
+        items(favorites) {
+            FavoriteCard(modifier, it.departureCode, it.destinationCode
+            ) { onHeartClick(it.departureCode, it.destinationCode) }
         }
     }
 }
@@ -105,30 +114,44 @@ fun FavoriteFlights(
  * Displays a [Favorite] flight card
  */
 @Composable
-fun FavoriteCard(modifier: Modifier = Modifier, departure: String, arrival: String,
-                 onClick: () -> Unit
+fun FavoriteCard(
+    modifier: Modifier = Modifier,
+    departure: String, destination: String,
+    onHeartClick: () -> Unit
 ) {
-    Card {
+    Card(
+        modifier = modifier.padding(8.dp)
+    ) {
         Row(
-            horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.Start),
-            modifier = modifier.fillMaxWidth()
-                .padding(start = 16.dp, end = 24.dp, top = 12.dp, bottom = 12.dp)
+            modifier = Modifier.fillMaxWidth()
         ) {
             Column(
                 verticalArrangement = Arrangement.Center,
-                modifier = Modifier.weight(weight = 1f)
+                modifier = modifier
+                    .padding(8.dp)
+                    .weight(1f)
             ) {
                 Text(text = "Depart", style = MaterialTheme.typography.labelMedium)
                 Text(text = departure)
             }
             Column(
                 verticalArrangement = Arrangement.Center,
-                modifier = Modifier.weight(weight = 1f)
+                modifier = modifier
+                    .padding(8.dp)
+                    .weight(1f)
             ) {
                 Text(text = "Arrive", style = MaterialTheme.typography.labelMedium)
-                Text(text = arrival)
+                Text(text = destination)
             }
-            IconButton(onClick = onClick) { Icons.Filled.Star }
+            IconButton(
+                onClick = {
+                    onHeartClick()
+                },
+                modifier = modifier
+                    .padding(8.dp)
+                    .weight(0.5f)
+            ) { Icon(Icons.Default.Favorite, "remove from favorites")
+            }
         }
     }
 }
