@@ -15,7 +15,6 @@
  */
 package com.example.flightsearch.ui.flight
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -59,7 +58,6 @@ object FlightsDestination : NavigationDestination {
 /**
  * Displays the flights for a given airport
  */
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun FlightsScreen(
     flightsViewModel: FlightsViewModel = viewModel(factory = AppViewModelProvider.Factory),
@@ -88,6 +86,7 @@ fun FlightsScreen(
             )
         }) {
             ShowFlights(
+                modifier = Modifier.padding(it),
                 departure = departureAirport,
                 destinations = destinationAirports,
                 onStarClick = { destCode: String ->
@@ -109,9 +108,7 @@ fun FlightsScreen(
                             flightsViewModel.deleteFavorite(it)
                         }
                     }
-
                   flightsViewModel.updateFavoriteUiState(favorites)
-
                 }
             )
         }
@@ -148,7 +145,7 @@ fun ShowFlights(
 ) {
     LazyColumn(modifier.fillMaxWidth()) {
         items(destinations) {
-            FlightCard(modifier, departure, it, onStarClick)
+            FlightCard(Modifier.fillMaxWidth(), departure, it, onStarClick)
         }
     }
 }
