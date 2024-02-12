@@ -1,5 +1,8 @@
 package com.example.flightsearch.ui.flight
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.flightsearch.data.Airport
@@ -22,10 +25,23 @@ class FlightsViewModel(
     private val favoriteRepository: FavoriteRepository,
 ): ViewModel() {
 
-    fun getFavorites(): Flow<List<Favorite>> {
+    var favoriteUiState by mutableStateOf(FavoritesUiState())
+        private set
+
+    /**
+     * Updates the [favoriteUiState] with the value provided in the argument
+     */
+    fun updateFavoriteUiState(favorites: MutableList<Favorite>) {
+        favoriteUiState = FavoritesUiState(favorites)
+    }
+
+    fun getFavorites(): Flow<MutableList<Favorite>> {
         return favoriteRepository.getFavorites()
     }
 
+    /**
+     * Inserts a flight into the favorite table of the flight_search database
+     */
     fun addFavorite(favorite: Favorite) {
         viewModelScope.launch {
             favoriteRepository.insert(favorite)
@@ -61,6 +77,8 @@ class FlightsViewModel(
         return airportRepository.getAllDestinationsFor(iataCode)
     }
 }
+
+data class FavoritesUiState(val favorites: MutableList<Favorite> = mutableListOf())
 
 
 

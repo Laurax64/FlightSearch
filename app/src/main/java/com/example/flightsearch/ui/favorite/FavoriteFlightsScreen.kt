@@ -62,12 +62,8 @@ fun FavoriteFlightsScreen(
     val favorites = favoriteFlightsViewModel.getFavorites()
         .collectAsState(initial = listOf()).value
 
-    Scaffold(topBar = { FlightSearchTopBar(
-        onSearchClick = navigateToAirportSearch) }) {
-        ShowFavorites(
-            Modifier.padding(it),
-            favorites
-        ) { depCode: String, desCode: String ->
+    Scaffold(topBar = { FlightSearchTopBar(onSearchClick = navigateToAirportSearch) }) {
+        ShowFavorites(Modifier.padding(it), favorites) { depCode: String, desCode: String ->
                 favorites.forEach {
                     if (it.departureCode == depCode && it.destinationCode == desCode) {
                         favoriteFlightsViewModel.delete(it)
@@ -119,38 +115,18 @@ fun FavoriteCard(
     departure: String, destination: String,
     onHeartClick: () -> Unit
 ) {
-    Card(
-        modifier = modifier.padding(8.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(
-                verticalArrangement = Arrangement.Center,
-                modifier = modifier
-                    .padding(8.dp)
-                    .weight(1f)
-            ) {
+    Card(modifier.padding(8.dp)) {
+        Row(Modifier.fillMaxWidth()) {
+            Column(modifier.padding(8.dp).weight(1f), Arrangement.Center) {
                 Text(text = "Depart", style = MaterialTheme.typography.labelMedium)
                 Text(text = departure)
             }
-            Column(
-                verticalArrangement = Arrangement.Center,
-                modifier = modifier
-                    .padding(8.dp)
-                    .weight(1f)
-            ) {
+            Column(modifier.padding(8.dp).weight(1f), Arrangement.Center) {
                 Text(text = "Arrive", style = MaterialTheme.typography.labelMedium)
                 Text(text = destination)
             }
-            IconButton(
-                onClick = {
-                    onHeartClick()
-                },
-                modifier = modifier
-                    .padding(8.dp)
-                    .weight(0.5f)
-            ) { Icon(Icons.Default.Favorite, "remove from favorites")
+            IconButton({ onHeartClick() }, modifier.padding(8.dp).weight(0.5f)) {
+                Icon(Icons.Default.Favorite, "remove from favorites")
             }
         }
     }

@@ -32,7 +32,6 @@ class FavoriteFlightsViewModel(
             favoriteRepository.delete(favorite)
         }
     }
-
 }
 
 

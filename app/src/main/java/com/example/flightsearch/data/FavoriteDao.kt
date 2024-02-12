@@ -18,6 +18,7 @@ package com.example.flightsearch.data
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 
@@ -30,7 +31,7 @@ interface FavoriteDao {
     /**
      * Inserts a route into the favorite table of the flight_search database
      */
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(favorite: Favorite)
 
     /**
@@ -43,7 +44,7 @@ interface FavoriteDao {
      * Retrieves all favorites from the favorite table of the flight_search database
      */
     @Query("SELECT * FROM favorite")
-    fun getFavorites(): Flow<List<Favorite>>
+    fun getFavorites(): Flow<MutableList<Favorite>>
 
     /**
      * Retrieves a favorite from the favorite table of the flight_search database by iata_code

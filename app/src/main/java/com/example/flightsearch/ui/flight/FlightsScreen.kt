@@ -66,17 +66,21 @@ fun FlightsScreen(
     navigateBack: () -> Unit,
 ) {
     val iataCode = flightsViewModel.getIataCode()
-        .collectAsState(initial = "").value
-    val favorites = flightsViewModel.getFavorites()
-        .collectAsState(initial = listOf()).value
+        .collectAsState("").value
+    val favorites: MutableList<Favorite> = flightsViewModel.getFavorites()
+        .collectAsState(mutableListOf()).value
+
+    //Since updateFavoriteUiState is not a composable function it is not re-executed
+    //when [favorites] changes
+    flightsViewModel.updateFavoriteUiState(favorites)
 
     var isFavorite by remember { mutableStateOf(true) }
-
     if (iataCode != "") {
         val departureAirport = flightsViewModel.getAirportByIataCode(iataCode)
-            .collectAsState(initial = Airport()).value
+            .collectAsState(Airport()).value
         val destinationAirports = flightsViewModel.getDestinationsAirports(iataCode)
-            .collectAsState(initial = listOf()).value
+            .collectAsState(listOf()).value
+
         Scaffold(topBar = {
             FlightsTopBar(
                 iataCode = iataCode,
@@ -87,21 +91,27 @@ fun FlightsScreen(
                 departure = departureAirport,
                 destinations = destinationAirports,
                 onStarClick = { destCode: String ->
-                    favorites.forEach {
+
+                    isFavorite = flightsViewModel.favoriteUiState.favorites.any {
+                        it.destinationCode == destCode
+                                && it.departureCode == departureAirport.iataCode
+                    }
+
+                    if(!isFavorite) {
+                        flightsViewModel.addFavorite(
+                            Favorite(0, departureAirport.iataCode, destCode)
+                        )
+                    }
+
+                    flightsViewModel.favoriteUiState.favorites.forEach {
                         if (it.destinationCode == destCode
                             && it.departureCode == departureAirport.iataCode) {
                             flightsViewModel.deleteFavorite(it)
-                            isFavorite = false
-                        }
-                        if(isFavorite) {
-                            flightsViewModel.addFavorite(
-                                Favorite(
-                                    departureCode = departureAirport.iataCode,
-                                    destinationCode = destCode
-                                )
-                            )
                         }
                     }
+
+                  flightsViewModel.updateFavoriteUiState(favorites)
+
                 }
             )
         }
