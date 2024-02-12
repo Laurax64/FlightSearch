@@ -100,7 +100,7 @@ fun ShowFavorites(
 ) {
     LazyColumn(modifier.fillMaxWidth()) {
         items(favorites) {
-            FavoriteCard(modifier, it.departureCode, it.destinationCode
+            FavoriteCard(Modifier, it.departureCode, it.destinationCode
             ) { onHeartClick(it.departureCode, it.destinationCode) }
         }
     }

@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.flightsearch.data.Airport
 import com.example.flightsearch.ui.AppViewModelProvider
+import com.example.flightsearch.ui.favorite.ShowFavorites
 import com.example.flightsearch.ui.navigation.NavigationDestination
 
 /**
@@ -65,6 +66,8 @@ fun AirportSearchScreen(
     val airports = airportSearchViewModel.getAirportsByText(searchString)
         .collectAsState(listOf()).value
     var active by remember { mutableStateOf(false) }
+    val favorites = airportSearchViewModel.getFavorites()
+        .collectAsState(initial = listOf()).value
 
     SearchBar(
         query = searchString,
@@ -75,15 +78,28 @@ fun AirportSearchScreen(
         placeholder = { Text(text = "Enter departure airport") },
         leadingIcon = { Icon(Icons.Default.Search, "Search Icon") }
     ) {
-        AirportSearchResults(
-            airports = airports,
-            onAirportClick = {
-                airportSearchViewModel.saveSearchString(it)
-                navigateToFlights()
-            }
-        )
+        if (searchString == "") {
+            ShowFavorites(
+                favorites = favorites,
+                onHeartClick = { depCode: String, desCode: String ->
+                    favorites.forEach {
+                        if (it.departureCode == depCode && it.destinationCode == desCode) {
+                            airportSearchViewModel.deleteFavorite(it)
+                        }
+                    }
+                }
+            )
+        } else {
+            AirportSearchResults(
+                airports = airports,
+                onAirportClick = {
+                    airportSearchViewModel.saveSearchString(it)
+                    navigateToFlights()
+                }
+            )
+        }
     }
-}
+    }
 
 @Composable
 fun AirportSearchResults(
@@ -91,7 +107,7 @@ fun AirportSearchResults(
 ) {
     LazyColumn(modifier.fillMaxWidth()) {
         items(items = airports, key = { airport -> airport.id }) {
-            AirportCard(modifier, it, onAirportClick )
+            AirportCard(modifier, it, onAirportClick)
         }
     }
 }
