@@ -16,14 +16,6 @@
 package com.example.flightsearch.data
 
 import android.content.Context
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.preferencesDataStore
-
-private const val SEARCH_STRING = "search_string_preferences"
-private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
-    name =  SEARCH_STRING
-)
 
 /**
  * App container for Dependency injection.

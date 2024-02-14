@@ -35,6 +35,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -59,12 +60,11 @@ fun FavoriteFlightsScreen(
     ),
     navigateToAirportSearch: () -> Unit
 ) {
-    val favorites = favoriteFlightsViewModel.getFavorites()
-        .collectAsState(initial = listOf()).value
+    val favoriteUiState by favoriteFlightsViewModel.favoriteUiState.collectAsState()
 
     Scaffold(topBar = { FlightSearchTopBar(onSearchClick = navigateToAirportSearch) }) {
-        ShowFavorites(Modifier.padding(it), favorites) { depCode: String, desCode: String ->
-                favorites.forEach {
+        ShowFavorites(Modifier.padding(it), favoriteUiState.favorites) { depCode: String, desCode: String ->
+            favoriteUiState.favorites.forEach {
                     if (it.departureCode == depCode && it.destinationCode == desCode) {
                         favoriteFlightsViewModel.delete(it)
                     }
@@ -117,15 +117,24 @@ fun FavoriteCard(
 ) {
     Card(modifier.padding(8.dp)) {
         Row(Modifier.fillMaxWidth()) {
-            Column(modifier.padding(8.dp).weight(1f), Arrangement.Center) {
+            Column(
+                modifier
+                    .padding(8.dp)
+                    .weight(1f), Arrangement.Center) {
                 Text(text = "Depart", style = MaterialTheme.typography.labelMedium)
                 Text(text = departure)
             }
-            Column(modifier.padding(8.dp).weight(1f), Arrangement.Center) {
+            Column(
+                modifier
+                    .padding(8.dp)
+                    .weight(1f), Arrangement.Center) {
                 Text(text = "Arrive", style = MaterialTheme.typography.labelMedium)
                 Text(text = destination)
             }
-            IconButton({ onHeartClick() }, modifier.padding(8.dp).weight(0.5f)) {
+            IconButton({ onHeartClick() },
+                modifier
+                    .padding(8.dp)
+                    .weight(0.5f)) {
                 Icon(Icons.Default.Favorite, "remove from favorites")
             }
         }

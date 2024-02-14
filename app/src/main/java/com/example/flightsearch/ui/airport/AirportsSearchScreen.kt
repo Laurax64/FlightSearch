@@ -51,7 +51,8 @@ object AirportSearchDestination : NavigationDestination {
 }
 
 /**
- *
+ * Displays a search bar and the corresponding search results.
+ * If the search string is empty, the user's favorites are displayed.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -99,8 +100,11 @@ fun AirportSearchScreen(
             )
         }
     }
-    }
+}
 
+/**
+ * Displays the search results in a [LazyColumn]
+ */
 @Composable
 fun AirportSearchResults(
     modifier: Modifier = Modifier, airports: List<Airport>, onAirportClick: (String) -> Unit

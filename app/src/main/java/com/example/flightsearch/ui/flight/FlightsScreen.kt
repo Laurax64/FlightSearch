@@ -39,6 +39,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -73,6 +74,7 @@ fun FlightsScreen(
     flightsViewModel.updateFavoriteUiState(favorites)
 
     var isFavorite by remember { mutableStateOf(true) }
+
     if (iataCode != "") {
         val departureAirport = flightsViewModel.getAirportByIataCode(iataCode)
             .collectAsState(Airport()).value
@@ -96,19 +98,27 @@ fun FlightsScreen(
                                 && it.departureCode == departureAirport.iataCode
                     }
 
-                    if(!isFavorite) {
-                        flightsViewModel.addFavorite(
-                            Favorite(0, departureAirport.iataCode, destCode)
-                        )
+                    if (!isFavorite) { flightsViewModel.updateFavoriteUiState(
+                        favorites, Favorite(0, destCode, departureAirport.iataCode))
+                            flightsViewModel.addFavorite()
                     }
 
                     flightsViewModel.favoriteUiState.favorites.forEach {
                         if (it.destinationCode == destCode
-                            && it.departureCode == departureAirport.iataCode) {
+                            && it.departureCode == departureAirport.iataCode
+                        ) {
                             flightsViewModel.deleteFavorite(it)
                         }
                     }
-                  flightsViewModel.updateFavoriteUiState(favorites)
+
+                    flightsViewModel.updateFavoriteUiState(favorites)
+
+                },
+                { destCode: String ->
+                    favorites.any {
+                        it.destinationCode == destCode
+                                && it.departureCode == departureAirport.iataCode
+                    }
                 }
             )
         }
@@ -122,11 +132,14 @@ fun FlightsScreen(
 @Composable
 fun FlightsTopBar(modifier: Modifier = Modifier, iataCode: String, onBackClick: () -> Unit) {
     CenterAlignedTopAppBar(
-        title = { Text(
-            text = "Flights from $iataCode",
-            style = MaterialTheme.typography.titleLarge) },
+        title = {
+            Text(
+                text = "Flights from $iataCode",
+                style = MaterialTheme.typography.titleLarge
+            )
+                },
         navigationIcon = {
-            IconButton(onClick = onBackClick){
+            IconButton(onClick = onBackClick) {
                 Icon(Icons.Default.ArrowBack, "Arrow back")
             }
         }
@@ -141,24 +154,29 @@ fun ShowFlights(
     modifier: Modifier = Modifier,
     departure: Airport,
     destinations: List<Airport>,
-    onStarClick: (String) -> Unit
+    onStarClick: (String) -> Unit,
+    filledHeart: (String) -> Boolean
 ) {
     LazyColumn(modifier.fillMaxWidth()) {
         items(destinations) {
-            FlightCard(Modifier.fillMaxWidth(), departure, it, onStarClick)
+            FlightCard(
+                Modifier.fillMaxWidth(), departure, it, onStarClick,
+                filledHeart(it.iataCode)
+            )
         }
     }
 }
 
 /**
- * Displays a card containing a route between the given [Airport]s and a radio button
+ * Displays a card containing a route between the given [Airport]s and a button
  * that lets the user add or remove the route from the favorite routes
  */
 @Composable
 fun FlightCard(modifier: Modifier = Modifier, departure: Airport,
-               arrival: Airport, onHeartClick: (String) -> Unit
+               arrival: Airport, onHeartClick: (String) -> Unit,
+               isFavorite: Boolean
 ) {
-    var filledHeart by remember {mutableStateOf(false)}
+    var filledHeart by rememberSaveable {mutableStateOf(isFavorite)}
     Card(
         modifier = modifier.padding(8.dp)
     ) {
@@ -189,7 +207,7 @@ fun FlightCard(modifier: Modifier = Modifier, departure: Airport,
                 onClick = {
                     onHeartClick(arrival.iataCode)
                     filledHeart = !filledHeart
-                          },
+                },
                 modifier = modifier
                     .padding(8.dp)
                     .weight(0.5f)

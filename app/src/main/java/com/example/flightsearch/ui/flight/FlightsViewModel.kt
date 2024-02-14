@@ -17,7 +17,6 @@ import kotlinx.coroutines.launch
 
 /**
  * A [ViewModel] instance for the [FavoriteFlightsScreen]
- *
  */
 class FlightsViewModel(
     private val airportRepository: AirportRepository,
@@ -31,10 +30,14 @@ class FlightsViewModel(
     /**
      * Updates the [favoriteUiState] with the value provided in the argument
      */
-    fun updateFavoriteUiState(favorites: MutableList<Favorite>) {
-        favoriteUiState = FavoritesUiState(favorites)
+    fun updateFavoriteUiState(favorites: MutableList<Favorite>,
+                              currentFavorite: Favorite = Favorite()) {
+        favoriteUiState = FavoritesUiState(favorites, currentFavorite)
     }
 
+    /**
+     * Retrieves all flights from the favorite table of the flight_search database
+     */
     fun getFavorites(): Flow<MutableList<Favorite>> {
         return favoriteRepository.getFavorites()
     }
@@ -42,9 +45,9 @@ class FlightsViewModel(
     /**
      * Inserts a flight into the favorite table of the flight_search database
      */
-    fun addFavorite(favorite: Favorite) {
+    fun addFavorite() {
         viewModelScope.launch {
-            favoriteRepository.insert(favorite)
+            favoriteRepository.insert(favoriteUiState.currentFavorite)
         }
     }
 
@@ -78,7 +81,13 @@ class FlightsViewModel(
     }
 }
 
-data class FavoritesUiState(val favorites: MutableList<Favorite> = mutableListOf())
+/**
+ * Represents the UI state of the user's favorites
+ *
+ * @property favorites The list of favorite items
+ */
+data class FavoritesUiState(val favorites: MutableList<Favorite> = mutableListOf(),
+    val currentFavorite: Favorite = Favorite())
 
 
 
