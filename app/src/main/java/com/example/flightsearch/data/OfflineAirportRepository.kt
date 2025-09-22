@@ -1,6 +1,5 @@
 package com.example.flightsearch.data
 
-
 /**
  * Repository for the [AirportDao] methods
  */
