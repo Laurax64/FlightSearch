@@ -49,27 +49,39 @@ fun FlightsScreen(
     flightsViewModel: FlightsViewModel = viewModel(factory = AppViewModelProvider.Factory),
     navigateBack: () -> Unit,
 ) {
-    val iataCode = flightsViewModel.getIataCode()
-        .collectAsState("").value
-    val favorites: MutableList<Favorite> = flightsViewModel.getFavorites()
-        .collectAsState(mutableListOf()).value
+    val iataCode =
+        flightsViewModel
+            .getIataCode()
+            .collectAsState("")
+            .value
+    val favorites: MutableList<Favorite> =
+        flightsViewModel
+            .getFavorites()
+            .collectAsState(mutableListOf())
+            .value
 
-    //Since updateFavoriteUiState is not a composable function it is not re-executed
-    //when [favorites] changes
+    // Since updateFavoriteUiState is not a composable function it is not re-executed
+    // when [favorites] changes
     flightsViewModel.updateFavoriteUiState(favorites)
 
     var isFavorite by remember { mutableStateOf(true) }
 
     if (iataCode != "") {
-        val departureAirport = flightsViewModel.getAirportByIataCode(iataCode)
-            .collectAsState(Airport()).value
-        val destinationAirports = flightsViewModel.getDestinationsAirports(iataCode)
-            .collectAsState(listOf()).value
+        val departureAirport =
+            flightsViewModel
+                .getAirportByIataCode(iataCode)
+                .collectAsState(Airport())
+                .value
+        val destinationAirports =
+            flightsViewModel
+                .getDestinationsAirports(iataCode)
+                .collectAsState(listOf())
+                .value
 
         Scaffold(topBar = {
             FlightsTopBar(
                 iataCode = iataCode,
-                onBackClick = navigateBack
+                onBackClick = navigateBack,
             )
         }) {
             ShowFlights(
@@ -78,33 +90,36 @@ fun FlightsScreen(
                 destinations = destinationAirports,
                 onStarClick = { destCode: String ->
 
-                    isFavorite = flightsViewModel.favoriteUiState.favorites.any {
-                        it.destinationCode == destCode
-                                && it.departureCode == departureAirport.iataCode
-                    }
+                    isFavorite =
+                        flightsViewModel.favoriteUiState.favorites.any {
+                            it.destinationCode == destCode &&
+                                    it.departureCode == departureAirport.iataCode
+                        }
 
-                    if (!isFavorite) { flightsViewModel.updateFavoriteUiState(
-                        favorites, Favorite(0, destCode, departureAirport.iataCode))
-                            flightsViewModel.addFavorite()
+                    if (!isFavorite) {
+                        flightsViewModel.updateFavoriteUiState(
+                            favorites,
+                            Favorite(0, destCode, departureAirport.iataCode)
+                        )
+                        flightsViewModel.addFavorite()
                     }
 
                     flightsViewModel.favoriteUiState.favorites.forEach {
-                        if (it.destinationCode == destCode
-                            && it.departureCode == departureAirport.iataCode
+                        if (it.destinationCode == destCode &&
+                            it.departureCode == departureAirport.iataCode
                         ) {
                             flightsViewModel.deleteFavorite(it)
                         }
                     }
 
                     flightsViewModel.updateFavoriteUiState(favorites)
-
                 },
                 { destCode: String ->
                     favorites.any {
-                        it.destinationCode == destCode
-                                && it.departureCode == departureAirport.iataCode
+                        it.destinationCode == destCode &&
+                                it.departureCode == departureAirport.iataCode
                     }
-                }
+                },
             )
         }
     }
@@ -115,19 +130,24 @@ fun FlightsScreen(
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FlightsTopBar(modifier: Modifier = Modifier, iataCode: String, onBackClick: () -> Unit) {
+fun FlightsTopBar(
+    modifier: Modifier = Modifier,
+    iataCode: String,
+    onBackClick: () -> Unit,
+) {
     CenterAlignedTopAppBar(
+        modifier = modifier,
         title = {
             Text(
                 text = "Flights from $iataCode",
-                style = MaterialTheme.typography.titleLarge
+                style = MaterialTheme.typography.titleLarge,
             )
-                },
+        },
         navigationIcon = {
             IconButton(onClick = onBackClick) {
                 Icon(Icons.Default.ArrowBack, "Arrow back")
             }
-        }
+        },
     )
 }
 
@@ -140,13 +160,16 @@ fun ShowFlights(
     departure: Airport,
     destinations: List<Airport>,
     onStarClick: (String) -> Unit,
-    filledHeart: (String) -> Boolean
+    filledHeart: (String) -> Boolean,
 ) {
     LazyColumn(modifier.fillMaxWidth()) {
         items(destinations) {
             FlightCard(
-                Modifier.fillMaxWidth(), departure, it, onStarClick,
-                filledHeart(it.iataCode)
+                Modifier.fillMaxWidth(),
+                departure,
+                it,
+                onStarClick,
+                filledHeart(it.iataCode),
             )
         }
     }
@@ -157,22 +180,26 @@ fun ShowFlights(
  * that lets the user add or remove the route from the favorite routes
  */
 @Composable
-fun FlightCard(modifier: Modifier = Modifier, departure: Airport,
-               arrival: Airport, onHeartClick: (String) -> Unit,
-               isFavorite: Boolean
+fun FlightCard(
+    modifier: Modifier = Modifier,
+    departure: Airport,
+    arrival: Airport,
+    onHeartClick: (String) -> Unit,
+    isFavorite: Boolean,
 ) {
-    var filledHeart by rememberSaveable {mutableStateOf(isFavorite)}
+    var filledHeart by rememberSaveable { mutableStateOf(isFavorite) }
     Card(
-        modifier = modifier.padding(8.dp)
+        modifier = modifier.padding(8.dp),
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         ) {
             Column(
                 verticalArrangement = Arrangement.Center,
-                modifier = modifier
-                    .padding(8.dp)
-                    .weight(1f)
+                modifier =
+                    modifier
+                        .padding(8.dp)
+                        .weight(1f),
             ) {
                 Text(text = "Depart", style = MaterialTheme.typography.labelMedium)
                 Text(text = departure.iataCode)
@@ -180,9 +207,10 @@ fun FlightCard(modifier: Modifier = Modifier, departure: Airport,
             }
             Column(
                 verticalArrangement = Arrangement.Center,
-                modifier = modifier
-                    .padding(8.dp)
-                    .weight(1f)
+                modifier =
+                    modifier
+                        .padding(8.dp)
+                        .weight(1f),
             ) {
                 Text(text = "Arrive", style = MaterialTheme.typography.labelMedium)
                 Text(text = arrival.iataCode)
@@ -193,17 +221,21 @@ fun FlightCard(modifier: Modifier = Modifier, departure: Airport,
                     onHeartClick(arrival.iataCode)
                     filledHeart = !filledHeart
                 },
-                modifier = modifier
-                    .padding(8.dp)
-                    .weight(0.5f)
+                modifier =
+                    modifier
+                        .padding(8.dp)
+                        .weight(0.5f),
             ) {
-                if(filledHeart) {
-                    Icon(Icons.Default.Favorite,
-                        "remove from favorites")
-                }
-                else {
-                    Icon(Icons.Default.FavoriteBorder,
-                        "add to favorites")
+                if (filledHeart) {
+                    Icon(
+                        Icons.Default.Favorite,
+                        "remove from favorites",
+                    )
+                } else {
+                    Icon(
+                        Icons.Default.FavoriteBorder,
+                        "add to favorites",
+                    )
                 }
             }
         }

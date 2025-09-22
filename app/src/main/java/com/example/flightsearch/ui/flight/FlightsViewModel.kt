@@ -14,7 +14,6 @@ import com.example.flightsearch.ui.favorite.FavoriteFlightsScreen
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
-
 /**
  * A [ViewModel] instance for the [FavoriteFlightsScreen]
  */
@@ -22,25 +21,24 @@ class FlightsViewModel(
     private val airportRepository: AirportRepository,
     private val userPreferencesRepository: UserPreferencesRepository,
     private val favoriteRepository: FavoriteRepository,
-): ViewModel() {
-
+) : ViewModel() {
     var favoriteUiState by mutableStateOf(FavoritesUiState())
         private set
 
     /**
      * Updates the [favoriteUiState] with the value provided in the argument
      */
-    fun updateFavoriteUiState(favorites: MutableList<Favorite>,
-                              currentFavorite: Favorite = Favorite()) {
+    fun updateFavoriteUiState(
+        favorites: MutableList<Favorite>,
+        currentFavorite: Favorite = Favorite(),
+    ) {
         favoriteUiState = FavoritesUiState(favorites, currentFavorite)
     }
 
     /**
      * Retrieves all flights from the favorite table of the flight_search database
      */
-    fun getFavorites(): Flow<MutableList<Favorite>> {
-        return favoriteRepository.getFavorites()
-    }
+    fun getFavorites(): Flow<MutableList<Favorite>> = favoriteRepository.getFavorites()
 
     /**
      * Inserts a flight into the favorite table of the flight_search database
@@ -61,24 +59,20 @@ class FlightsViewModel(
      * Returns the current search string which has been set to the iata code
      * of the recently selected airport
      */
-    fun getIataCode(): Flow<String> {
-        return userPreferencesRepository.searchString
-    }
+    fun getIataCode(): Flow<String> = userPreferencesRepository.searchString
 
     /**
      * Returns the airport whose iata code matches the given iatacode
      */
-    fun getAirportByIataCode(iataCode: String): Flow<Airport> {
-        return airportRepository.getAirportByIataCode(iataCode)
-    }
+    fun getAirportByIataCode(iataCode: String): Flow<Airport> =
+        airportRepository.getAirportByIataCode(iataCode)
 
     /**
      * Retrieves all Airports from the airport table of the flight_search database whose
      * iata_code does not match the given iata code
      */
-    fun getDestinationsAirports(iataCode: String): Flow<List<Airport>> {
-        return airportRepository.getAllDestinationsFor(iataCode)
-    }
+    fun getDestinationsAirports(iataCode: String): Flow<List<Airport>> =
+        airportRepository.getAllDestinationsFor(iataCode)
 }
 
 /**
@@ -86,8 +80,7 @@ class FlightsViewModel(
  *
  * @property favorites The list of favorite items
  */
-data class FavoritesUiState(val favorites: MutableList<Favorite> = mutableListOf(),
-    val currentFavorite: Favorite = Favorite())
-
-
-
+data class FavoritesUiState(
+    val favorites: MutableList<Favorite> = mutableListOf(),
+    val currentFavorite: Favorite = Favorite(),
+)

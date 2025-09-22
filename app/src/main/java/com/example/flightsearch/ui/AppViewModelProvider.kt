@@ -14,27 +14,28 @@ import com.example.flightsearch.ui.flight.FlightsViewModel
 * Provides Factory to create instances of all the app's view models
 */
 object AppViewModelProvider {
-    val Factory = viewModelFactory {
-        initializer {
+    val Factory =
+        viewModelFactory {
+            initializer {
                 AirportSearchViewModel(
                     flightSearchApplication().container.airportRepository,
                     flightSearchApplication().userPreferencesRepository,
-                    flightSearchApplication().container.favoriteRepository
+                    flightSearchApplication().container.favoriteRepository,
                 )
             }
-        initializer {
-            FavoriteFlightsViewModel(
-                flightSearchApplication().container.favoriteRepository
-            )
+            initializer {
+                FavoriteFlightsViewModel(
+                    flightSearchApplication().container.favoriteRepository,
+                )
+            }
+            initializer {
+                FlightsViewModel(
+                    flightSearchApplication().container.airportRepository,
+                    flightSearchApplication().userPreferencesRepository,
+                    flightSearchApplication().container.favoriteRepository,
+                )
+            }
         }
-        initializer {
-            FlightsViewModel(
-                flightSearchApplication().container.airportRepository,
-                flightSearchApplication().userPreferencesRepository,
-                flightSearchApplication().container.favoriteRepository
-            )
-        }
-    }
 }
 
 /**

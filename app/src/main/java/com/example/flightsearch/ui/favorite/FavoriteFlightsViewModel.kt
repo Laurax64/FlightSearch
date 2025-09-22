@@ -17,16 +17,18 @@ import kotlinx.coroutines.launch
  *
  */
 class FavoriteFlightsViewModel(
-    private val favoriteRepository: FavoriteRepository
-): ViewModel() {
-
+    private val favoriteRepository: FavoriteRepository,
+) : ViewModel() {
     val favoriteUiState: StateFlow<FavoriteUiState> =
-        favoriteRepository.getFavorites().map { FavoriteUiState(it) }
+        favoriteRepository
+            .getFavorites()
+            .map { FavoriteUiState(it) }
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
-                initialValue = FavoriteUiState()
+                initialValue = FavoriteUiState(),
             )
+
     companion object {
         private const val TIMEOUT_MILLIS = 5_000L
     }
@@ -44,4 +46,6 @@ class FavoriteFlightsViewModel(
 /**
  * Ui State for the favorite screen
  */
-data class FavoriteUiState(val favorites: MutableList<Favorite> = mutableListOf())
+data class FavoriteUiState(
+    val favorites: MutableList<Favorite> = mutableListOf(),
+)

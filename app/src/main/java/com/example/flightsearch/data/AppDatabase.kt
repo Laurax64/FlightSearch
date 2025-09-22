@@ -6,27 +6,28 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 
 @Database(entities = [Airport::class, Favorite::class], version = 1)
-abstract class AppDatabase: RoomDatabase() {
+abstract class AppDatabase : RoomDatabase() {
     abstract fun airportDao(): AirportDao
+
     abstract fun favoriteDao(): FavoriteDao
+
     companion object {
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
-        fun getDatabase(context: Context): AppDatabase {
-            return INSTANCE ?: synchronized(this) {
-                Room.databaseBuilder(
-                    context,
-                    AppDatabase::class.java,
-                    "app_database"
-                )
-                    .createFromAsset("database/flight_search.db")
-                    .fallbackToDestructiveMigration()
+        fun getDatabase(context: Context): AppDatabase =
+            INSTANCE ?: synchronized(this) {
+                Room
+                    .databaseBuilder(
+                        context,
+                        AppDatabase::class.java,
+                        "app_database",
+                    ).createFromAsset("database/flight_search.db")
+                    .fallbackToDestructiveMigration(false)
                     .build()
                     .also {
                         INSTANCE = it
                     }
             }
-        }
     }
 }

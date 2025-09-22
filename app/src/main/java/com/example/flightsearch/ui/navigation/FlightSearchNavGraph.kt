@@ -23,26 +23,25 @@ fun FlightSearchNavHost(
     NavHost(
         navController = navController,
         startDestination = FavoriteFlightsDestination.route,
-        modifier = modifier
+        modifier = modifier,
     ) {
         composable(route = FavoriteFlightsDestination.route) {
             FavoriteFlightsScreen(
                 navigateToAirportSearch = {
-                    navController.navigate(AirportSearchDestination.route) },
+                    navController.navigate(AirportSearchDestination.route)
+                },
             )
         }
         composable(route = AirportSearchDestination.route) {
             AirportSearchScreen(
                 navigateToFlights = {
                     navController.navigate(FlightsDestination.route)
-                }
+                },
             )
         }
-        composable(
-            route = FlightsDestination.route,
-            ) {
+        composable(route = FlightsDestination.route) {
             FlightsScreen(
-                navigateBack = { navController.navigateUp() }
+                navigateBack = { navController.navigateUp() },
             )
         }
     }

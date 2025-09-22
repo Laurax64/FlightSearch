@@ -17,7 +17,9 @@ import java.io.IOException
  * @param dataStore The [DataStore] instance
  * @property searchString The users text input [Flow]
  */
-class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
+class UserPreferencesRepository(
+    private val dataStore: DataStore<Preferences>,
+) {
     private companion object {
         val SEARCH_STRING = stringPreferencesKey("search_string")
         const val TAG = "UserPreferencesRepo"
@@ -25,18 +27,18 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
 
     /* Each time the data in the DataStore is updated,
     a new Preferences object is emitted into the Flow */
-    val searchString: Flow<String> = dataStore.data
-        .catch {
-            if(it is IOException) {
-                Log.e(TAG, "Error reading preferences.", it)
-                emit(emptyPreferences())
-            } else {
-                throw it
+    val searchString: Flow<String> =
+        dataStore.data
+            .catch {
+                if (it is IOException) {
+                    Log.e(TAG, "Error reading preferences.", it)
+                    emit(emptyPreferences())
+                } else {
+                    throw it
+                }
+            }.map { preferences ->
+                preferences[SEARCH_STRING] ?: ""
             }
-        }
-        .map { preferences ->
-        preferences[SEARCH_STRING] ?: ""
-        }
 
     /**
      * Writes the users text input to the [DataStore].
@@ -45,7 +47,7 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
      * until the app's cache or data is cleared.
      */
     suspend fun saveSearchString(userTextInput: String) {
-        dataStore.edit {preferences ->
+        dataStore.edit { preferences ->
             preferences[SEARCH_STRING] = userTextInput
         }
     }

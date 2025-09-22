@@ -14,13 +14,16 @@ interface AppContainer {
  * [AppContainer] implementation that provides an instance of [OfflineAirportRepository]
  * and [OfflineFavoriteRepository]
  */
-class AppDataContainer(private val context: Context) : AppContainer {
+class AppDataContainer(
+    private val context: Context,
+) : AppContainer {
     /**
      * Implementation for [AirportRepository]
      */
     override val airportRepository: AirportRepository by lazy {
         OfflineAirportRepository(AppDatabase.getDatabase(context).airportDao())
     }
+
     /**
      * Implementation for [FavoriteRepository]
      */

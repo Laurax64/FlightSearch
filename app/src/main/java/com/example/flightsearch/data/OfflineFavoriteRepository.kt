@@ -1,6 +1,8 @@
 package com.example.flightsearch.data
 
-class OfflineFavoriteRepository(private val favoriteDao: FavoriteDao): FavoriteRepository {
+class OfflineFavoriteRepository(
+    private val favoriteDao: FavoriteDao,
+) : FavoriteRepository {
     /**
      * Inserts a flight into the favorite table of the flight_search database
      */
@@ -19,6 +21,8 @@ class OfflineFavoriteRepository(private val favoriteDao: FavoriteDao): FavoriteR
     /**
      * Retrieves a favorite from the favorite table of the flight_search database by iata_code
      */
-    override fun getFavorite(departureCode: String, destinationCode: String) =
-        favoriteDao.getFavorite(departureCode, destinationCode)
+    override fun getFavorite(
+        departureCode: String,
+        destinationCode: String,
+    ) = favoriteDao.getFavorite(departureCode, destinationCode)
 }

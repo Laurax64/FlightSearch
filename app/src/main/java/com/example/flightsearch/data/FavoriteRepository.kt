@@ -24,5 +24,8 @@ interface FavoriteRepository {
     /**
      * Retrieves a favorite from the favorite table of the flight_search database by iata_code
      */
-    fun getFavorite(departureCode: String, destinationCode: String): Flow<Favorite>
+    fun getFavorite(
+        departureCode: String,
+        destinationCode: String,
+    ): Flow<Favorite>
 }

@@ -34,9 +34,14 @@ interface FavoriteDao {
     /**
      * Retrieves a favorite from the favorite table of the flight_search database by iata_code
      */
-    @Query("""
+    @Query(
+        """
         SELECT * FROM favorite
         WHERE departure_code = :departureCode AND destination_code = :destinationCode
-        """)
-    fun getFavorite(departureCode: String, destinationCode: String): Flow<Favorite>
+        """,
+    )
+    fun getFavorite(
+        departureCode: String,
+        destinationCode: String,
+    ): Flow<Favorite>
 }

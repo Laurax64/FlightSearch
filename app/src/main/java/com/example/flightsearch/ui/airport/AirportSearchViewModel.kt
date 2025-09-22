@@ -18,12 +18,11 @@ import kotlinx.coroutines.launch
 class AirportSearchViewModel(
     private val airportRepository: AirportRepository,
     private val userPreferencesRepository: UserPreferencesRepository,
-    val favoriteRepository: FavoriteRepository
-): ViewModel() {
-
+    val favoriteRepository: FavoriteRepository,
+) : ViewModel() {
     /**
-    * Stores the search string in the [UserPreferencesRepository]
-    */
+     * Stores the search string in the [UserPreferencesRepository]
+     */
     fun saveSearchString(searchString: String) {
         viewModelScope.launch {
             userPreferencesRepository.saveSearchString(searchString)
@@ -42,22 +41,17 @@ class AirportSearchViewModel(
     /**
      * Retrieves als flights from the favorite table of the flight_search database
      */
-    fun getFavorites(): Flow<List<Favorite>> {
-        return favoriteRepository.getFavorites()
-    }
+    fun getFavorites(): Flow<List<Favorite>> = favoriteRepository.getFavorites()
 
     /**
-    * Returns the search string [Flow]
-    */
-    fun getSearchString(): Flow<String> {
-        return userPreferencesRepository.searchString
-    }
+     * Returns the search string [Flow]
+     */
+    fun getSearchString(): Flow<String> = userPreferencesRepository.searchString
 
     /**
      * Returns the list of [Airport]'s that contain the search String
      */
 
-    fun getAirportsByText(searchString: String): Flow<List<Airport>> {
-        return airportRepository.getAirportsByText(searchString)
-    }
+    fun getAirportsByText(searchString: String): Flow<List<Airport>> =
+        airportRepository.getAirportsByText(searchString)
 }

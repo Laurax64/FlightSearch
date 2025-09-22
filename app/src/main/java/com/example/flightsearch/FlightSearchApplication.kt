@@ -11,7 +11,7 @@ import com.example.flightsearch.data.UserPreferencesRepository
 
 private const val SEARCH_STRING = "search_string_preferences"
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
-    name =  SEARCH_STRING
+    name = SEARCH_STRING,
 )
 
 /**
@@ -19,8 +19,7 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
  *
  * @property userPreferencesRepository The search string repository
  */
-class FlightSearchApplication: Application() {
-
+class FlightSearchApplication : Application() {
     lateinit var container: AppContainer
     lateinit var userPreferencesRepository: UserPreferencesRepository
 

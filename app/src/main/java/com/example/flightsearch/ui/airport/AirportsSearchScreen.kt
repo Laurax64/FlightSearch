@@ -12,6 +12,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.SearchBar
+import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -44,47 +45,69 @@ object AirportSearchDestination : NavigationDestination {
 fun AirportSearchScreen(
     airportSearchViewModel: AirportSearchViewModel =
         viewModel(factory = AppViewModelProvider.Factory),
-    navigateToFlights: () -> Unit
-
+    navigateToFlights: () -> Unit,
 ) {
-    val searchString = airportSearchViewModel
-        .getSearchString().collectAsState(initial = "").value
-    val airports = airportSearchViewModel.getAirportsByText(searchString)
-        .collectAsState(listOf()).value
+    val searchString =
+        airportSearchViewModel
+            .getSearchString()
+            .collectAsState(initial = "")
+            .value
+    val airports =
+        airportSearchViewModel
+            .getAirportsByText(searchString)
+            .collectAsState(listOf())
+            .value
     var active by remember { mutableStateOf(false) }
-    val favorites = airportSearchViewModel.getFavorites()
-        .collectAsState(initial = listOf()).value
+    val favorites =
+        airportSearchViewModel
+            .getFavorites()
+            .collectAsState(initial = listOf())
+            .value
 
+    val colors1 = SearchBarDefaults.colors()
     SearchBar(
-        query = searchString,
-        onQueryChange = { airportSearchViewModel.saveSearchString(it) },
-        onSearch = { active = false },
-        active = active,
-        onActiveChange = { active = it },
-        placeholder = { Text(text = "Enter departure airport") },
-        leadingIcon = { Icon(Icons.Default.Search, "Search Icon") }
-    ) {
-        if (searchString == "") {
-            ShowFavorites(
-                favorites = favorites,
-                onHeartClick = { depCode: String, desCode: String ->
-                    favorites.forEach {
-                        if (it.departureCode == depCode && it.destinationCode == desCode) {
-                            airportSearchViewModel.deleteFavorite(it)
+        inputField = {
+            SearchBarDefaults.InputField(
+                query = searchString,
+                onQueryChange = { airportSearchViewModel.saveSearchString(it) },
+                onSearch = { active = false },
+                expanded = active,
+                onExpandedChange = { active = it },
+                placeholder = { Text(text = "Enter departure airport") },
+                leadingIcon = { Icon(Icons.Default.Search, "Search Icon") },
+                colors = colors1.inputFieldColors,
+            )
+        },
+        expanded = active,
+        onExpandedChange = { active = it },
+        shape = SearchBarDefaults.inputFieldShape,
+        colors = colors1,
+        tonalElevation = SearchBarDefaults.TonalElevation,
+        shadowElevation = SearchBarDefaults.ShadowElevation,
+        windowInsets = SearchBarDefaults.windowInsets,
+        content = {
+            if (searchString == "") {
+                ShowFavorites(
+                    favorites = favorites,
+                    onHeartClick = { depCode: String, desCode: String ->
+                        favorites.forEach {
+                            if (it.departureCode == depCode && it.destinationCode == desCode) {
+                                airportSearchViewModel.deleteFavorite(it)
+                            }
                         }
-                    }
-                }
-            )
-        } else {
-            AirportSearchResults(
-                airports = airports,
-                onAirportClick = {
-                    airportSearchViewModel.saveSearchString(it)
-                    navigateToFlights()
-                }
-            )
-        }
-    }
+                    },
+                )
+            } else {
+                AirportSearchResults(
+                    airports = airports,
+                    onAirportClick = {
+                        airportSearchViewModel.saveSearchString(it)
+                        navigateToFlights()
+                    },
+                )
+            }
+        },
+    )
 }
 
 /**
@@ -92,7 +115,9 @@ fun AirportSearchScreen(
  */
 @Composable
 fun AirportSearchResults(
-    modifier: Modifier = Modifier, airports: List<Airport>, onAirportClick: (String) -> Unit
+    modifier: Modifier = Modifier,
+    airports: List<Airport>,
+    onAirportClick: (String) -> Unit,
 ) {
     LazyColumn(modifier.fillMaxWidth()) {
         items(items = airports, key = { airport -> airport.id }) {
@@ -105,10 +130,17 @@ fun AirportSearchResults(
  * Displays a clickable column for the given [Airport]
  */
 @Composable
-fun AirportCard(modifier: Modifier = Modifier, airport: Airport,
-                onAirportClick: (String) -> Unit) {
-    Card(modifier.fillMaxWidth().clickable { onAirportClick((airport.iataCode)) }
-        .padding(8.dp)) {
+fun AirportCard(
+    modifier: Modifier = Modifier,
+    airport: Airport,
+    onAirportClick: (String) -> Unit,
+) {
+    Card(
+        modifier
+            .fillMaxWidth()
+            .clickable { onAirportClick((airport.iataCode)) }
+            .padding(8.dp),
+    ) {
         Column(modifier.padding(16.dp)) {
             Text(text = airport.iataCode, fontWeight = FontWeight.Bold)
             Text(text = airport.name)

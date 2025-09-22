@@ -40,23 +40,27 @@ object FavoriteFlightsDestination : NavigationDestination {
  */
 @Composable
 fun FavoriteFlightsScreen(
-    favoriteFlightsViewModel: FavoriteFlightsViewModel = viewModel(
-        factory = AppViewModelProvider.Factory
-    ),
-    navigateToAirportSearch: () -> Unit
+    favoriteFlightsViewModel: FavoriteFlightsViewModel =
+        viewModel(
+            factory = AppViewModelProvider.Factory,
+        ),
+    navigateToAirportSearch: () -> Unit,
 ) {
     val favoriteUiState by favoriteFlightsViewModel.favoriteUiState.collectAsState()
 
     Scaffold(topBar = { FlightSearchTopBar(onSearchClick = navigateToAirportSearch) }) {
-        ShowFavorites(Modifier.padding(it), favoriteUiState.favorites) { depCode: String, desCode: String ->
+        ShowFavorites(
+            Modifier.padding(it),
+            favoriteUiState.favorites,
+        ) { depCode: String, desCode: String ->
             favoriteUiState.favorites.forEach {
-                    if (it.departureCode == depCode && it.destinationCode == desCode) {
-                        favoriteFlightsViewModel.delete(it)
-                    }
+                if (it.departureCode == depCode && it.destinationCode == desCode) {
+                    favoriteFlightsViewModel.delete(it)
                 }
             }
         }
     }
+}
 
 /**
  * Displays the favorite screen's top bar
@@ -64,14 +68,22 @@ fun FavoriteFlightsScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FlightSearchTopBar(
-    modifier: Modifier = Modifier, onSearchClick: () -> Unit) {
+    modifier: Modifier = Modifier,
+    onSearchClick: () -> Unit,
+) {
     CenterAlignedTopAppBar(
-        title = { Text(text = "Flight search", style = MaterialTheme.typography.titleLarge) },
+        modifier = modifier,
+        title = {
+            Text(
+                text = "Flight search",
+                style = MaterialTheme.typography.titleLarge,
+            )
+        },
         navigationIcon = {
-            IconButton(onClick = onSearchClick){
+            IconButton(onClick = onSearchClick) {
                 Icon(Icons.Default.Search, "Search Icon")
             }
-        }
+        },
     )
 }
 
@@ -80,12 +92,16 @@ fun FlightSearchTopBar(
  */
 @Composable
 fun ShowFavorites(
-    modifier: Modifier = Modifier, favorites: List<Favorite>,
-    onHeartClick: (String, String) -> Unit
+    modifier: Modifier = Modifier,
+    favorites: List<Favorite>,
+    onHeartClick: (String, String) -> Unit,
 ) {
     LazyColumn(modifier.fillMaxWidth()) {
         items(favorites) {
-            FavoriteCard(Modifier, it.departureCode, it.destinationCode
+            FavoriteCard(
+                Modifier,
+                it.departureCode,
+                it.destinationCode,
             ) { onHeartClick(it.departureCode, it.destinationCode) }
         }
     }
@@ -97,32 +113,38 @@ fun ShowFavorites(
 @Composable
 fun FavoriteCard(
     modifier: Modifier = Modifier,
-    departure: String, destination: String,
-    onHeartClick: () -> Unit
+    departure: String,
+    destination: String,
+    onHeartClick: () -> Unit,
 ) {
     Card(modifier.padding(8.dp)) {
         Row(Modifier.fillMaxWidth()) {
             Column(
                 modifier
                     .padding(8.dp)
-                    .weight(1f), Arrangement.Center) {
+                    .weight(1f),
+                Arrangement.Center,
+            ) {
                 Text(text = "Depart", style = MaterialTheme.typography.labelMedium)
                 Text(text = departure)
             }
             Column(
                 modifier
                     .padding(8.dp)
-                    .weight(1f), Arrangement.Center) {
+                    .weight(1f),
+                Arrangement.Center,
+            ) {
                 Text(text = "Arrive", style = MaterialTheme.typography.labelMedium)
                 Text(text = destination)
             }
-            IconButton({ onHeartClick() },
+            IconButton(
+                { onHeartClick() },
                 modifier
                     .padding(8.dp)
-                    .weight(0.5f)) {
+                    .weight(0.5f),
+            ) {
                 Icon(Icons.Default.Favorite, "remove from favorites")
             }
         }
     }
 }
-
