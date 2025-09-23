@@ -22,7 +22,7 @@ import com.example.flightsearch.R
 import com.example.flightsearch.data.airport.Airport
 import com.example.flightsearch.data.airport.getFlag
 import com.example.flightsearch.ui.AppViewModelProvider
-import com.example.flightsearch.ui.components.FlightsColumn
+import com.example.flightsearch.ui.components.FlightsLazyVerticalGrid
 import com.example.flightsearch.ui.navigation.NavigationDestination
 
 /**
@@ -69,7 +69,7 @@ private fun FlightsScreen(
             )
         }
     ) { paddingValues ->
-        FlightsColumn(
+        FlightsLazyVerticalGrid(
             modifier = Modifier.padding(paddingValues),
             flights = flights,
             onHeartClick = onHeartClick

@@ -4,26 +4,27 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.FilledTonalIconToggleButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.example.flightsearch.R
 import com.example.flightsearch.data.airport.Airport
+import com.example.flightsearch.ui.airport.AirportListItem
 import com.example.flightsearch.ui.flight.Flight
+import com.example.flightsearch.ui.theme.FlightSearchTheme
 
 
 /**
@@ -39,15 +40,8 @@ fun calculateColumns(): Int =
         else -> 1
     }
 
-/**
- * A lazy column of flight cards
- *
- * @param modifier Modifier to apply to this composable
- * @param flights The list of flights to display
- * @param onHeartClick A function to call when the heart icon is clicked
- */
 @Composable
-fun FlightsColumn(
+fun FlightsLazyVerticalGrid(
     modifier: Modifier = Modifier,
     flights: List<Flight>,
     onHeartClick: (Flight) -> Unit
@@ -59,11 +53,12 @@ fun FlightsColumn(
         items(flights) { flight ->
             FlightCard(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(4.dp),
+                    .fillMaxWidth(),
                 flight = flight,
                 onHeartClick = { onHeartClick(flight) }
             )
+            HorizontalDivider()
+
         }
     }
 }
@@ -85,62 +80,79 @@ private fun FlightCard(
     val destination = flight.destination
     val isFavorite = flight.isFavorite
 
-    OutlinedCard(modifier = modifier) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+            modifier = Modifier.weight(1f)
         ) {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-                modifier = Modifier.weight(1f)
-            ) {
-                AirportColumn(
-                    airport = startingPoint,
-                    title = stringResource(R.string.starting_point)
+            AirportListItem(
+                airport = startingPoint,
+                onAirportClick = {}
+            )
+            AirportListItem(
+                airport = destination,
+                onAirportClick = {}
+            )
+        }
+        FilledTonalIconToggleButton(
+            checked = isFavorite,
+            colors = IconButtonDefaults.iconToggleButtonColors(
+                checkedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                checkedContentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+            ),
+            onCheckedChange = {
+                onHeartClick(destination.iataCode)
+            },
+        ) {
+            if (isFavorite) {
+                Icon(
+                    painter = painterResource(R.drawable.baseline_favorite_24),
+                    contentDescription = stringResource(R.string.remove_from_favorites),
                 )
-                AirportColumn(
-                    airport = destination,
-                    title = stringResource(R.string.destination)
+            } else {
+                Icon(
+                    painter = painterResource(R.drawable.baseline_favorite_border_24),
+                    contentDescription = stringResource(R.string.add_to_favorites),
                 )
-            }
-            FilledTonalIconToggleButton(
-                checked = isFavorite,
-                colors = IconButtonDefaults.iconToggleButtonColors(
-                    checkedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-                    checkedContentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                ),
-                onCheckedChange = {
-                    onHeartClick(destination.iataCode)
-                },
-            ) {
-                if (isFavorite) {
-                    Icon(
-                        painter = painterResource(R.drawable.baseline_favorite_24),
-                        contentDescription = stringResource(R.string.remove_from_favorites),
-                    )
-                } else {
-                    Icon(
-                        painter = painterResource(R.drawable.baseline_favorite_border_24),
-                        contentDescription = stringResource(R.string.add_to_favorites),
-                    )
-                }
             }
         }
-
     }
 }
 
+@Preview(showBackground = true)
 @Composable
-private fun AirportColumn(airport: Airport, title: String, modifier: Modifier = Modifier) {
-    Column(modifier = modifier) {
-        Text(text = title, style = MaterialTheme.typography.titleLarge)
-        Text(
-            text = airport.iataCode + " " + airport.name,
-            style = MaterialTheme.typography.bodyLarge
+fun FlightsLazyVerticalG3ridPreview() {
+    val flights = listOf(
+        Flight(
+            startingPoint = Airport(iataCode = "SEA", name = "Seattle"),
+            destination = Airport(iataCode = "LAX", name = "Los Angeles"),
+            isFavorite = true
+        ),
+        Flight(
+            startingPoint = Airport(iataCode = "SEA", name = "Seattle"),
+            destination = Airport(iataCode = "SFO", name = "San Francisco"),
+            isFavorite = false
+        ),
+        Flight(
+            startingPoint = Airport(iataCode = "SEA", name = "Seattle"),
+            destination = Airport(iataCode = "ORD", name = "Chicago"),
+            isFavorite = true
+        ),
+        Flight(
+            startingPoint = Airport(iataCode = "SEA", name = "Seattle"),
+            destination = Airport(iataCode = "DFW", name = "Dallas"),
+            isFavorite = false
+        ),
+    )
+    FlightSearchTheme {
+        FlightsLazyVerticalGrid(
+            flights = flights,
+            onHeartClick = {}
         )
     }
+
 }
