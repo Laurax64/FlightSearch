@@ -1,4 +1,4 @@
-package com.example.flightsearch.data
+package com.example.flightsearch.data.favorite
 
 import kotlinx.coroutines.flow.Flow
 
@@ -12,9 +12,12 @@ interface FavoriteRepository {
     suspend fun insert(favorite: Favorite)
 
     /**
-     * Removes a flight from the favorite table of the flight_search database
+     * Removes a flight from the favorite table of the flight_search database by iata_code.
+     *
+     * @param departureCode The iata_code of the departure airport
+     * @param destinationCode The iata_code of the destination airport
      */
-    suspend fun delete(favorite: Favorite)
+    suspend fun deleteByIataCodes(departureCode: String, destinationCode: String)
 
     /**
      * Retrieves all flights from the favorite table of the flight_search database

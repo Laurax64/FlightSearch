@@ -63,6 +63,7 @@ dependencies {
     implementation(libs.androidx.compose.material3) // Ensure this is the BOM-aligned version
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.compose.adaptive)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.espresso.core)

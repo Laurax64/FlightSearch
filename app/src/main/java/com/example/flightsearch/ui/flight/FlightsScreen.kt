@@ -1,37 +1,28 @@
 package com.example.flightsearch.ui.flight
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material3.Card
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.flightsearch.data.Airport
-import com.example.flightsearch.data.Favorite
+import com.example.flightsearch.R
+import com.example.flightsearch.data.airport.Airport
+import com.example.flightsearch.data.airport.getFlag
 import com.example.flightsearch.ui.AppViewModelProvider
+import com.example.flightsearch.ui.components.FlightsColumn
 import com.example.flightsearch.ui.navigation.NavigationDestination
 
 /**
@@ -46,198 +37,108 @@ object FlightsDestination : NavigationDestination {
  */
 @Composable
 fun FlightsScreen(
-    flightsViewModel: FlightsViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    modifier: Modifier = Modifier,
+    viewModel: FlightsViewModel = viewModel(factory = AppViewModelProvider.Factory),
     navigateBack: () -> Unit,
 ) {
-    val iataCode =
-        flightsViewModel
-            .getIataCode()
-            .collectAsState("")
-            .value
-    val favorites: MutableList<Favorite> =
-        flightsViewModel
-            .getFavorites()
-            .collectAsState(mutableListOf())
-            .value
+    val uiState by viewModel.flightsUiState.collectAsStateWithLifecycle()
 
-    // Since updateFavoriteUiState is not a composable function it is not re-executed
-    // when [favorites] changes
-    flightsViewModel.updateFavoriteUiState(favorites)
+    FlightsScreen(
+        modifier = modifier,
+        startingPoint = uiState.startingPoint,
+        flights = uiState.flights,
+        onHeartClick = viewModel::toggleIsFavorite,
+        navigateBack = navigateBack,
+    )
+}
 
-    var isFavorite by remember { mutableStateOf(true) }
-
-    if (iataCode != "") {
-        val departureAirport =
-            flightsViewModel
-                .getAirportByIataCode(iataCode)
-                .collectAsState(Airport())
-                .value
-        val destinationAirports =
-            flightsViewModel
-                .getDestinationsAirports(iataCode)
-                .collectAsState(listOf())
-                .value
-
-        Scaffold(topBar = {
+@Composable
+private fun FlightsScreen(
+    modifier: Modifier = Modifier,
+    startingPoint: Airport,
+    flights: List<Flight>,
+    onHeartClick: (Flight) -> Unit,
+    navigateBack: () -> Unit,
+) {
+    Scaffold(
+        modifier = modifier,
+        topBar = {
             FlightsTopBar(
-                iataCode = iataCode,
                 onBackClick = navigateBack,
-            )
-        }) {
-            ShowFlights(
-                modifier = Modifier.padding(it),
-                departure = departureAirport,
-                destinations = destinationAirports,
-                onStarClick = { destCode: String ->
-
-                    isFavorite =
-                        flightsViewModel.favoriteUiState.favorites.any {
-                            it.destinationCode == destCode &&
-                                    it.departureCode == departureAirport.iataCode
-                        }
-
-                    if (!isFavorite) {
-                        flightsViewModel.updateFavoriteUiState(
-                            favorites,
-                            Favorite(0, destCode, departureAirport.iataCode)
-                        )
-                        flightsViewModel.addFavorite()
-                    }
-
-                    flightsViewModel.favoriteUiState.favorites.forEach {
-                        if (it.destinationCode == destCode &&
-                            it.departureCode == departureAirport.iataCode
-                        ) {
-                            flightsViewModel.deleteFavorite(it)
-                        }
-                    }
-
-                    flightsViewModel.updateFavoriteUiState(favorites)
-                },
-                { destCode: String ->
-                    favorites.any {
-                        it.destinationCode == destCode &&
-                                it.departureCode == departureAirport.iataCode
-                    }
-                },
+                startingPoint = startingPoint
             )
         }
+    ) { paddingValues ->
+        FlightsColumn(
+            modifier = Modifier.padding(paddingValues),
+            flights = flights,
+            onHeartClick = onHeartClick
+        )
     }
 }
 
 /**
- * Displays the flight screen's top bar
+ * The flight screen's top bar
  */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun FlightsTopBar(
+private fun FlightsTopBar(
     modifier: Modifier = Modifier,
-    iataCode: String,
+    startingPoint: Airport,
     onBackClick: () -> Unit,
 ) {
-    CenterAlignedTopAppBar(
+    TopAppBar(
         modifier = modifier,
         title = {
             Text(
-                text = "Flights from $iataCode",
-                style = MaterialTheme.typography.titleLarge,
+                text = stringResource(id = R.string.flights_from, startingPoint.iataCode),
+            )
+        },
+        actions = {
+            Text(
+                modifier = Modifier.padding(16.dp),
+                text = startingPoint.getFlag(), fontSize = 32.sp
             )
         },
         navigationIcon = {
             IconButton(onClick = onBackClick) {
-                Icon(Icons.Default.ArrowBack, "Arrow back")
+                Icon(
+                    painter = painterResource(id = R.drawable.baseline_arrow_back_24),
+                    contentDescription = stringResource(id = R.string.go_back)
+                )
             }
         },
     )
 }
 
-/**
- * Display's the flight's for the give departure airport
- */
+@Preview
 @Composable
-fun ShowFlights(
-    modifier: Modifier = Modifier,
-    departure: Airport,
-    destinations: List<Airport>,
-    onStarClick: (String) -> Unit,
-    filledHeart: (String) -> Boolean,
-) {
-    LazyColumn(modifier.fillMaxWidth()) {
-        items(destinations) {
-            FlightCard(
-                Modifier.fillMaxWidth(),
-                departure,
-                it,
-                onStarClick,
-                filledHeart(it.iataCode),
-            )
-        }
-    }
-}
-
-/**
- * Displays a card containing a route between the given [Airport]s and a button
- * that lets the user add or remove the route from the favorite routes
- */
-@Composable
-fun FlightCard(
-    modifier: Modifier = Modifier,
-    departure: Airport,
-    arrival: Airport,
-    onHeartClick: (String) -> Unit,
-    isFavorite: Boolean,
-) {
-    var filledHeart by rememberSaveable { mutableStateOf(isFavorite) }
-    Card(
-        modifier = modifier.padding(8.dp),
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Column(
-                verticalArrangement = Arrangement.Center,
-                modifier =
-                    modifier
-                        .padding(8.dp)
-                        .weight(1f),
-            ) {
-                Text(text = "Depart", style = MaterialTheme.typography.labelMedium)
-                Text(text = departure.iataCode)
-                Text(text = departure.name)
-            }
-            Column(
-                verticalArrangement = Arrangement.Center,
-                modifier =
-                    modifier
-                        .padding(8.dp)
-                        .weight(1f),
-            ) {
-                Text(text = "Arrive", style = MaterialTheme.typography.labelMedium)
-                Text(text = arrival.iataCode)
-                Text(text = arrival.name)
-            }
-            IconButton(
-                onClick = {
-                    onHeartClick(arrival.iataCode)
-                    filledHeart = !filledHeart
-                },
-                modifier =
-                    modifier
-                        .padding(8.dp)
-                        .weight(0.5f),
-            ) {
-                if (filledHeart) {
-                    Icon(
-                        Icons.Default.Favorite,
-                        "remove from favorites",
-                    )
-                } else {
-                    Icon(
-                        Icons.Default.FavoriteBorder,
-                        "add to favorites",
-                    )
-                }
-            }
-        }
-    }
+fun FlightScreenPreview() {
+    FlightsScreen(
+        startingPoint = Airport(iataCode = "SEA", name = "Seattle"),
+        flights = listOf(
+            Flight(
+                startingPoint = Airport(iataCode = "SEA", name = "Seattle"),
+                destination = Airport(iataCode = "LAX", name = "Los Angeles"),
+                isFavorite = true
+            ),
+            Flight(
+                startingPoint = Airport(iataCode = "SEA", name = "Seattle"),
+                destination = Airport(iataCode = "SFO", name = "San Francisco"),
+                isFavorite = false
+            ),
+            Flight(
+                startingPoint = Airport(iataCode = "SEA", name = "Seattle"),
+                destination = Airport(iataCode = "ORD", name = "Chicago"),
+                isFavorite = true
+            ),
+            Flight(
+                startingPoint = Airport(iataCode = "SEA", name = "Seattle"),
+                destination = Airport(iataCode = "DFW", name = "Dallas"),
+                isFavorite = false
+            ),
+        ),
+        onHeartClick = {},
+        navigateBack = {}
+    )
 }

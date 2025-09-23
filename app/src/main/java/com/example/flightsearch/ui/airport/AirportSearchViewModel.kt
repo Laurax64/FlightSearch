@@ -1,13 +1,16 @@
 package com.example.flightsearch.ui.airport
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.flightsearch.data.Airport
-import com.example.flightsearch.data.AirportRepository
-import com.example.flightsearch.data.Favorite
-import com.example.flightsearch.data.FavoriteRepository
 import com.example.flightsearch.data.UserPreferencesRepository
-import kotlinx.coroutines.flow.Flow
+import com.example.flightsearch.data.airport.Airport
+import com.example.flightsearch.data.airport.AirportRepository
+import com.example.flightsearch.data.favorite.FavoriteRepository
+import com.example.flightsearch.ui.flight.Flight
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 /**
@@ -20,9 +23,33 @@ class AirportSearchViewModel(
     private val userPreferencesRepository: UserPreferencesRepository,
     val favoriteRepository: FavoriteRepository,
 ) : ViewModel() {
-    /**
-     * Stores the search string in the [UserPreferencesRepository]
-     */
+
+    val uiState = combine(
+        userPreferencesRepository.searchString,
+        airportRepository.getAllAirports(),
+        favoriteRepository.getFavorites()
+    ) { searchString, airports, favorites ->
+        Log.d("AirportSearchViewModel", "codes: ${airports.joinToString(", ") { it.iataCode }}")
+        AirportSearchUiState(
+            searchString = searchString,
+            airports = airports.filter { // filter airports by search string
+                it.iataCode.startsWith(searchString) ||
+                        it.name.contains(searchString)
+            }.sortedBy { it.name }.sortedBy { it.iataCode },
+            favorites = favorites.map { favorite -> // map favorites to flights
+                Flight(
+                    startingPoint = airports.first { it.iataCode == favorite.departureCode },
+                    destination = airports.first { it.iataCode == favorite.destinationCode },
+                    isFavorite = true
+                )
+            },
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = AirportSearchUiState()
+    )
+
     fun saveSearchString(searchString: String) {
         viewModelScope.launch {
             userPreferencesRepository.saveSearchString(searchString)
@@ -30,28 +57,23 @@ class AirportSearchViewModel(
     }
 
     /**
-     * Deletes a [Favorite] from the favorite table of the flight_search database
+     * Deletes a favorite flight from the database by its iata_code
+     *
+     * @param departureCode The iata_code of the departure airport
+     * @param destinationCode The iata_code of the destination airport
      */
-    fun deleteFavorite(favorite: Favorite) {
+    fun deleteFavorite(departureCode: String, destinationCode: String) {
         viewModelScope.launch {
-            favoriteRepository.delete(favorite)
+            favoriteRepository.deleteByIataCodes(
+                departureCode = departureCode,
+                destinationCode = destinationCode
+            )
         }
     }
-
-    /**
-     * Retrieves als flights from the favorite table of the flight_search database
-     */
-    fun getFavorites(): Flow<List<Favorite>> = favoriteRepository.getFavorites()
-
-    /**
-     * Returns the search string [Flow]
-     */
-    fun getSearchString(): Flow<String> = userPreferencesRepository.searchString
-
-    /**
-     * Returns the list of [Airport]'s that contain the search String
-     */
-
-    fun getAirportsByText(searchString: String): Flow<List<Airport>> =
-        airportRepository.getAirportsByText(searchString)
 }
+
+data class AirportSearchUiState(
+    val searchString: String = "",
+    val airports: List<Airport> = listOf(),
+    val favorites: List<Flight> = listOf()
+)

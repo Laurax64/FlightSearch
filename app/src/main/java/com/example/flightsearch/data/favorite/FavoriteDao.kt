@@ -1,4 +1,4 @@
-package com.example.flightsearch.data
+package com.example.flightsearch.data.favorite
 
 import androidx.room.Dao
 import androidx.room.Delete
@@ -16,7 +16,7 @@ interface FavoriteDao {
     /**
      * Inserts a route into the favorite table of the flight_search database
      */
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.Companion.IGNORE)
     suspend fun insert(favorite: Favorite)
 
     /**
@@ -24,6 +24,20 @@ interface FavoriteDao {
      */
     @Delete
     suspend fun delete(favorite: Favorite)
+
+    /**
+     * Removes a flight from the favorite table of the flight_search database by iata_code.
+     *
+     * @param departureCode The iata_code of the departure airport
+     * @param destinationCode The iata_code of the destination airport
+     */
+    @Query(
+        value = """
+            DELETE FROM favorite
+            WHERE departure_code = :departureCode AND destination_code = :destinationCode
+            """
+    )
+    suspend fun deleteByIataCodes(departureCode: String, destinationCode: String)
 
     /**
      * Retrieves all favorites from the favorite table of the flight_search database

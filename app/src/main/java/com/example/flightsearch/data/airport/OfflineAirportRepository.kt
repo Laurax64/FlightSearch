@@ -1,4 +1,4 @@
-package com.example.flightsearch.data
+package com.example.flightsearch.data.airport
 
 /**
  * Repository for the [AirportDao] methods
@@ -6,11 +6,11 @@ package com.example.flightsearch.data
 class OfflineAirportRepository(
     private val airportDao: AirportDao,
 ) : AirportRepository {
+
     /**
-     * Retrieves all [Airport]s whose name or iata_code contains the users text input
+     * Retrieves all [Airport]s from the airport table of the flight_search database
      */
-    override fun getAirportsByText(searchString: String) =
-        airportDao.getAirportsByText(searchString)
+    override fun getAllAirports() = airportDao.getAllAirports()
 
     /**
      * Retrieves the [Airport] from the airport table of the flight_search database whose iata_code

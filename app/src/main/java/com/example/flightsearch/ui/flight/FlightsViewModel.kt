@@ -1,86 +1,105 @@
 package com.example.flightsearch.ui.flight
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.flightsearch.data.Airport
-import com.example.flightsearch.data.AirportRepository
-import com.example.flightsearch.data.Favorite
-import com.example.flightsearch.data.FavoriteRepository
 import com.example.flightsearch.data.UserPreferencesRepository
-import com.example.flightsearch.ui.favorite.FavoriteFlightsScreen
-import kotlinx.coroutines.flow.Flow
+import com.example.flightsearch.data.airport.Airport
+import com.example.flightsearch.data.airport.AirportRepository
+import com.example.flightsearch.data.favorite.Favorite
+import com.example.flightsearch.data.favorite.FavoriteRepository
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-/**
- * A [ViewModel] instance for the [FavoriteFlightsScreen]
- */
 class FlightsViewModel(
-    private val airportRepository: AirportRepository,
-    private val userPreferencesRepository: UserPreferencesRepository,
-    private val favoriteRepository: FavoriteRepository,
+    airportRepository: AirportRepository,
+    userPreferencesRepository: UserPreferencesRepository,
+    private val favoriteRepository: FavoriteRepository
 ) : ViewModel() {
-    var favoriteUiState by mutableStateOf(FavoritesUiState())
-        private set
+
+    val flightsUiState = combine(
+        userPreferencesRepository.searchString,
+        favoriteRepository.getFavorites(),
+        airportRepository.getAllAirports(),
+    ) { iataCode, favorites, airports ->
+        val destinations = airports.filter { it.iataCode != iataCode }
+        val startingPoint = airports.first { it.iataCode == iataCode }
+        FlightsUiState(
+            startingPoint = startingPoint,
+            flights =
+                destinations.map { dest ->
+                    createFlight(
+                        favorites = favorites,
+                        startingPoint = startingPoint,
+                        destination = dest
+                    )
+                }
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5_000),
+        initialValue = FlightsUiState()
+    )
 
     /**
-     * Updates the [favoriteUiState] with the value provided in the argument
+     * Creates a flight object with the given parameters.
+     * If the flight is a favorite, the isFavorite flag will be set to true.
+     *
+     * @param favorites The list of favorite flights
+     * @param startingPoint The starting point of the flight
+     * @param destination The destination of the flight
      */
-    fun updateFavoriteUiState(
-        favorites: MutableList<Favorite>,
-        currentFavorite: Favorite = Favorite(),
-    ) {
-        favoriteUiState = FavoritesUiState(favorites, currentFavorite)
-    }
+    @VisibleForTesting
+    fun createFlight(
+        favorites: List<Favorite>,
+        startingPoint: Airport,
+        destination: Airport
+    ) = Flight(
+        startingPoint = startingPoint,
+        destination = destination,
+        isFavorite = favorites.any {
+            it.departureCode == startingPoint.iataCode && it.destinationCode == destination.iataCode
+        }
+    )
 
     /**
-     * Retrieves all flights from the favorite table of the flight_search database
+     * Toggles the favorite status of a flight. If the flight is already a favorite, it will be
+     * removed from the favorites list. If the flight is not a favorite, it will be added to the
+     * favorites list.
+     *
+     * @param flight The flight to toggle the favorite status of
      */
-    fun getFavorites(): Flow<MutableList<Favorite>> = favoriteRepository.getFavorites()
-
-    /**
-     * Inserts a flight into the favorite table of the flight_search database
-     */
-    fun addFavorite() {
+    fun toggleIsFavorite(flight: Flight) {
         viewModelScope.launch {
-            favoriteRepository.insert(favoriteUiState.currentFavorite)
+            val departureCode = flight.startingPoint.iataCode
+            val destinationCode = flight.destination.iataCode
+            if (flight.isFavorite) {
+                favoriteRepository.deleteByIataCodes(
+                    departureCode = departureCode,
+                    destinationCode = destinationCode
+                )
+            } else {
+                favoriteRepository.insert(
+                    Favorite(
+                        departureCode = departureCode,
+                        destinationCode = destinationCode
+                    )
+                )
+            }
         }
     }
 
-    fun deleteFavorite(favorite: Favorite) {
-        viewModelScope.launch {
-            favoriteRepository.delete(favorite)
-        }
-    }
-
-    /**
-     * Returns the current search string which has been set to the iata code
-     * of the recently selected airport
-     */
-    fun getIataCode(): Flow<String> = userPreferencesRepository.searchString
-
-    /**
-     * Returns the airport whose iata code matches the given iatacode
-     */
-    fun getAirportByIataCode(iataCode: String): Flow<Airport> =
-        airportRepository.getAirportByIataCode(iataCode)
-
-    /**
-     * Retrieves all Airports from the airport table of the flight_search database whose
-     * iata_code does not match the given iata code
-     */
-    fun getDestinationsAirports(iataCode: String): Flow<List<Airport>> =
-        airportRepository.getAllDestinationsFor(iataCode)
 }
 
-/**
- * Represents the UI state of the user's favorites
- *
- * @property favorites The list of favorite items
- */
-data class FavoritesUiState(
-    val favorites: MutableList<Favorite> = mutableListOf(),
-    val currentFavorite: Favorite = Favorite(),
+data class FlightsUiState(
+    val flights: List<Flight> = listOf(),
+    val startingPoint: Airport = Airport(),
 )
+
+data class Flight(
+    val startingPoint: Airport,
+    val destination: Airport,
+    val isFavorite: Boolean,
+)
+

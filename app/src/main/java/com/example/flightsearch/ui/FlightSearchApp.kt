@@ -1,4 +1,4 @@
-package com.example.flightsearch
+package com.example.flightsearch.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier

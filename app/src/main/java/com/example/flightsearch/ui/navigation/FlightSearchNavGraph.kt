@@ -7,8 +7,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.flightsearch.ui.airport.AirportSearchDestination
 import com.example.flightsearch.ui.airport.AirportSearchScreen
-import com.example.flightsearch.ui.favorite.FavoriteFlightsDestination
-import com.example.flightsearch.ui.favorite.FavoriteFlightsScreen
 import com.example.flightsearch.ui.flight.FlightsDestination
 import com.example.flightsearch.ui.flight.FlightsScreen
 
@@ -22,16 +20,9 @@ fun FlightSearchNavHost(
 ) {
     NavHost(
         navController = navController,
-        startDestination = FavoriteFlightsDestination.route,
+        startDestination = AirportSearchDestination.route,
         modifier = modifier,
     ) {
-        composable(route = FavoriteFlightsDestination.route) {
-            FavoriteFlightsScreen(
-                navigateToAirportSearch = {
-                    navController.navigate(AirportSearchDestination.route)
-                },
-            )
-        }
         composable(route = AirportSearchDestination.route) {
             AirportSearchScreen(
                 navigateToFlights = {

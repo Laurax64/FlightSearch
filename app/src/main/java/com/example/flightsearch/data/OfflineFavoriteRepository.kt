@@ -1,5 +1,9 @@
 package com.example.flightsearch.data
 
+import com.example.flightsearch.data.favorite.Favorite
+import com.example.flightsearch.data.favorite.FavoriteDao
+import com.example.flightsearch.data.favorite.FavoriteRepository
+
 class OfflineFavoriteRepository(
     private val favoriteDao: FavoriteDao,
 ) : FavoriteRepository {
@@ -7,11 +11,6 @@ class OfflineFavoriteRepository(
      * Inserts a flight into the favorite table of the flight_search database
      */
     override suspend fun insert(favorite: Favorite) = favoriteDao.insert(favorite)
-
-    /**
-     * Removes a flight from the favorite table of the flight_search database
-     */
-    override suspend fun delete(favorite: Favorite) = favoriteDao.delete(favorite)
 
     /**
      * Retrieves als flights from the favorite table of the flight_search database
@@ -25,4 +24,13 @@ class OfflineFavoriteRepository(
         departureCode: String,
         destinationCode: String,
     ) = favoriteDao.getFavorite(departureCode, destinationCode)
+
+    /**
+     * Removes a flight from the favorite table of the flight_search database by iata_code.
+     *
+     * @param departureCode The iata_code of the departure airport
+     * @param destinationCode The iata_code of the destination airport
+     */
+    override suspend fun deleteByIataCodes(departureCode: String, destinationCode: String) =
+        favoriteDao.deleteByIataCodes(departureCode, destinationCode)
 }

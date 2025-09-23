@@ -1,6 +1,9 @@
 package com.example.flightsearch.data
 
 import android.content.Context
+import com.example.flightsearch.data.airport.AirportRepository
+import com.example.flightsearch.data.airport.OfflineAirportRepository
+import com.example.flightsearch.data.favorite.FavoriteRepository
 
 /**
  * App container for Dependency injection.
@@ -11,7 +14,7 @@ interface AppContainer {
 }
 
 /**
- * [AppContainer] implementation that provides an instance of [OfflineAirportRepository]
+ * [AppContainer] implementation that provides an instance of [com.example.flightsearch.data.airport.OfflineAirportRepository]
  * and [OfflineFavoriteRepository]
  */
 class AppDataContainer(
