@@ -2,6 +2,7 @@ package com.example.flightsearch.ui.airport
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -24,6 +25,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.tooling.preview.PreviewScreenSizes
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.flightsearch.R
@@ -32,7 +36,9 @@ import com.example.flightsearch.data.airport.getFlag
 import com.example.flightsearch.ui.AppViewModelProvider
 import com.example.flightsearch.ui.components.FlightsLazyVerticalGrid
 import com.example.flightsearch.ui.components.calculateColumns
+import com.example.flightsearch.ui.flight.Flight
 import com.example.flightsearch.ui.navigation.NavigationDestination
+import com.example.flightsearch.ui.theme.FlightSearchTheme
 
 /**
  * Represents a navigation destination for the airports search screen
@@ -54,20 +60,39 @@ fun AirportSearchScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val airports = uiState.airports
-    var searchString by rememberSaveable { mutableStateOf(uiState.searchString) }
+    val searchString = uiState.searchString
     val favorites = uiState.favorites
+    AirportSearchScreen(
+        modifier = modifier,
+        airports = airports,
+        favorites = favorites,
+        searchString = searchString,
+        deleteFavorite = { flight ->
+            viewModel.deleteFavorite(
+                departureCode = flight.startingPoint.iataCode,
+                destinationCode = flight.destination.iataCode
+            )
+        },
+        saveSearchString = viewModel::saveSearchString,
+        navigateToFlights = navigateToFlights
+    )
+
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AirportSearchScreen(
+    modifier: Modifier = Modifier,
+    airports: List<Airport>,
+    favorites: List<Flight>,
+    searchString: String,
+    saveSearchString: (String) -> Unit,
+    deleteFavorite: (Flight) -> Unit,
+    navigateToFlights: (String) -> Unit,
+) {
+    var textInput by rememberSaveable { mutableStateOf(searchString) }
     var expanded by rememberSaveable { mutableStateOf(false) }
-    val flightsLazyColumn = @Composable {
-        FlightsLazyVerticalGrid(
-            flights = favorites,
-            onHeartClick = { flight ->
-                viewModel.deleteFavorite(
-                    departureCode = flight.startingPoint.iataCode,
-                    destinationCode = flight.destination.iataCode
-                )
-            },
-        )
-    }
+
     SearchBar(
         modifier = modifier.fillMaxWidth(), colors = SearchBarDefaults.colors(
             containerColor = MaterialTheme.colorScheme.surface,
@@ -78,10 +103,10 @@ fun AirportSearchScreen(
                     unfocusedContainerColor = MaterialTheme.colorScheme.surface,
                 ),
                 modifier = Modifier.fillMaxWidth(),
-                query = searchString,
+                query = textInput,
                 onQueryChange = {
-                    searchString = it
-                    viewModel.saveSearchString(it)
+                    textInput = it
+                    saveSearchString(it)
                 },
                 onSearch = {
                     expanded = false
@@ -99,8 +124,8 @@ fun AirportSearchScreen(
                     if (searchString != "") {
                         IconButton(
                             onClick = {
-                                searchString = ""
-                                viewModel.saveSearchString("")
+                                textInput = ""
+                                saveSearchString("")
                             }) {
                             Icon(
                                 painter = painterResource(R.drawable.baseline_close_24),
@@ -115,17 +140,23 @@ fun AirportSearchScreen(
                 AirportSearchResults(
                     airports = airports,
                     onAirportClick = {
-                        viewModel.saveSearchString(it)
+                        textInput = it
+                        saveSearchString(it)
                         navigateToFlights(it)
                     },
                 )
             } else {
-                flightsLazyColumn.invoke()
+                FlightsLazyVerticalGrid(
+                    flights = favorites,
+                    onHeartClick = { flight ->
+                        deleteFavorite(flight)
+                    },
+                )
             }
 
-        })
+        }
+    )
 }
-
 
 /**
  * Displays the search results in a [LazyColumn]
@@ -139,6 +170,9 @@ fun AirportSearchResults(
     LazyVerticalGrid(columns = GridCells.Fixed(count = calculateColumns()), modifier = modifier) {
         items(airports) {
             AirportListItem(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(4.dp),
                 airport = it,
                 onAirportClick = onAirportClick
             )
@@ -177,7 +211,92 @@ fun AirportListItem(
     )
 }
 
+@PreviewLightDark
+@PreviewScreenSizes
+@Composable
+fun AirportSearchScreenFlightsPreview() {
+    FlightSearchTheme {
+        AirportSearchScreen(
+            airports = listOf(
+                Airport(iataCode = "SEA", name = "Seattle"),
+                Airport(iataCode = "LAX", name = "Los Angeles"),
+                Airport(iataCode = "SFO", name = "San Francisco"),
+                Airport(iataCode = "ORD", name = "Chicago"),
+                Airport(iataCode = "DFW", name = "Dallas"),
+            ),
+            favorites = listOf(
+                Flight(
+                    startingPoint = Airport(iataCode = "SEA", name = "Seattle"),
+                    destination = Airport(iataCode = "LAX", name = "Los Angeles"),
+                    isFavorite = true
+                ),
+                Flight(
+                    startingPoint = Airport(iataCode = "SEA", name = "Seattle"),
+                    destination = Airport(iataCode = "SFO", name = "San Francisco"),
+                    isFavorite = false
+                ),
+                Flight(
+                    startingPoint = Airport(iataCode = "SEA", name = "Seattle"),
+                    destination = Airport(iataCode = "ORD", name = "Chicago"),
+                    isFavorite = true
+                ),
+                Flight(
+                    startingPoint = Airport(iataCode = "SEA", name = "Seattle"),
+                    destination = Airport(iataCode = "DFW", name = "Dallas"),
+                    isFavorite = false
+                ),
+            ),
+            searchString = "A",
+            saveSearchString = {},
+            deleteFavorite = {},
+            navigateToFlights = {}
+        )
+    }
+}
 
+
+@PreviewLightDark
+@PreviewScreenSizes
+@Composable
+fun AirportSearchScreenFavoritesPreview() {
+    FlightSearchTheme {
+        AirportSearchScreen(
+            airports = listOf(
+                Airport(iataCode = "SEA", name = "Seattle"),
+                Airport(iataCode = "LAX", name = "Los Angeles"),
+                Airport(iataCode = "SFO", name = "San Francisco"),
+                Airport(iataCode = "ORD", name = "Chicago"),
+                Airport(iataCode = "DFW", name = "Dallas"),
+            ),
+            favorites = listOf(
+                Flight(
+                    startingPoint = Airport(iataCode = "SEA", name = "Seattle"),
+                    destination = Airport(iataCode = "LAX", name = "Los Angeles"),
+                    isFavorite = true
+                ),
+                Flight(
+                    startingPoint = Airport(iataCode = "SEA", name = "Seattle"),
+                    destination = Airport(iataCode = "SFO", name = "San Francisco"),
+                    isFavorite = false
+                ),
+                Flight(
+                    startingPoint = Airport(iataCode = "SEA", name = "Seattle"),
+                    destination = Airport(iataCode = "ORD", name = "Chicago"),
+                    isFavorite = true
+                ),
+                Flight(
+                    startingPoint = Airport(iataCode = "SEA", name = "Seattle"),
+                    destination = Airport(iataCode = "DFW", name = "Dallas"),
+                    isFavorite = false
+                ),
+            ),
+            searchString = "",
+            saveSearchString = {},
+            deleteFavorite = {},
+            navigateToFlights = {}
+        )
+    }
+}
 
 
 

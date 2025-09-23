@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -51,9 +52,10 @@ fun FlightsLazyVerticalGrid(
         modifier = modifier
     ) {
         items(flights) { flight ->
-            FlightCard(
+            FlightRow(
                 modifier = Modifier
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .padding(4.dp),
                 flight = flight,
                 onHeartClick = { onHeartClick(flight) }
             )
@@ -64,14 +66,14 @@ fun FlightsLazyVerticalGrid(
 }
 
 /**
- * A card containing a flight and a heart icon to toggle the favorite status of the flight.
+ * A row containing a flight and a heart icon to toggle the favorite status of the flight.
  *
  * @param modifier Modifier to apply to this composable
  * @param flight The flight to display
  * @param onHeartClick A function to call when the heart icon is clicked
  */
 @Composable
-private fun FlightCard(
+private fun FlightRow(
     modifier: Modifier = Modifier,
     flight: Flight,
     onHeartClick: (String) -> Unit,
@@ -84,7 +86,6 @@ private fun FlightCard(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Column(
-            verticalArrangement = Arrangement.spacedBy(4.dp),
             modifier = Modifier.weight(1f)
         ) {
             AirportListItem(
