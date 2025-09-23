@@ -1,8 +1,4 @@
-package com.example.flightsearch.data
-
-import com.example.flightsearch.data.favorite.Favorite
-import com.example.flightsearch.data.favorite.FavoriteDao
-import com.example.flightsearch.data.favorite.FavoriteRepository
+package com.example.flightsearch.data.favorite
 
 class OfflineFavoriteRepository(
     private val favoriteDao: FavoriteDao,
